@@ -99,6 +99,8 @@ The advantages of SRP are as follows:
 	* Small classes can be modified easily
 	* Small classes are more readable
 
+A class's size is measured by its responsibilities, not its lines.  To check a class, describe it in about 25 words without using "if," "and," "or," or "but."  If the description needs those words, or the class needs a vague name such as `AccountManager` or `ContactProcessor`, it has more than one responsibility.
+
 [Back to Contents](#contents)
 
 

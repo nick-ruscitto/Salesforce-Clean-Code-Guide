@@ -152,6 +152,15 @@ Code is written for the people who read and change it next.
 - **Errors are exceptions**: Throw exceptions rather than returning error codes, and do not return null
 - **The Boy Scout Rule**: Leave every file cleaner than you found it
 
+### Simple Design
+
+Kent Beck's four rules of simple design, in order of priority. A design that follows them tends toward the rest of this guide.
+
+1. **Runs all the tests.** Code that is hard to test is the first sign of a design problem, and the tests are what make every later change safe
+2. **Contains no duplication.** The same query in three classes, or the same validation in a trigger and a controller, is a fix that will be made in only one place
+3. **Expresses the intent of the programmer.** Through names, small methods, and the patterns in this guide
+4. **Minimizes the number of classes and methods.** Last in priority: do not add an interface or a class only because a pattern exists
+
 ### SOLID Principles
 
 This guide emphasizes SOLID principles throughout:

@@ -50,6 +50,29 @@ tests in the production environment, in the QA environment, and on your laptop w
 
 **Timely:** The tests need to be written in a timely fashion. Write each unit test together with the production code it tests, and deploy them together. If you write tests after the production code, then you may find the production code to be hard to test. You may decide that some production code is too hard to test. You may not design the production code to be testable.
 
+**Build, operate, check:**
+
+Every test has three parts, in this order, separated by blank lines:
+
+1. **Build** the test data
+2. **Operate** on it by calling the code under test, between `Test.startTest()` and `Test.stopTest()`
+3. **Check** the results with assertions
+
+```java
+@isTest
+static void forAccountType_givenPartnerAccount_shouldReturnPartnerPricingPolicy() {
+	Account partnerAccount = new Account(Name = 'Acme Corporation', Type = 'Partner');
+
+	Test.startTest();
+		PricingPolicyInterface pricingPolicy = PricingPolicyFactory.forAccountType(partnerAccount.Type);
+	Test.stopTest();
+
+	Assert.isInstanceOfType(pricingPolicy, PartnerPricingPolicy.class);
+}
+```
+
+Name helper methods, such as `buildMockAccount`, in the language of the domain, so that the build step reads as a description of the situation being tested.
+
 **What a test should do:**
 
 Remember that the primary reason for unit tests is to make sure the code works and provide

@@ -17,6 +17,7 @@
 	* Methods
 	* Code Blocks
 	* Queries
+	* Vertical Formatting
 3. [Comments](#comments)
 4. [Code Style](#code-style)
 	* Class Layout
@@ -25,8 +26,9 @@
 	* Apex Classes
 	* Asynchronous Apex
 	* SOQL Queries
-5. [Exceptions](#exceptions)
-6. [Security](#security)
+5. [Objects and Data Structures](#objects-and-data-structures)
+6. [Exceptions](#exceptions)
+7. [Security](#security)
 
 ## Naming
 Names are the primary way code communicates intent.  If a name requires a comment to explain what it does, it is not a clean name.
@@ -351,6 +353,13 @@ List<Person__c> peopleNamedGob = [
 	WHERE FirstName__c = 'Gob'
 ];
 ```
+
+#### Vertical Formatting
+* Separate concepts with a blank line: between methods, and between groups of statements in a method that do different things
+* Keep lines that belong to one thought together, with no blank lines between them
+* Declare a local variable close to where it is first used
+* Place a method that calls another above the method it calls, as described in [Class Layout](#class-layout)
+
 [Back to Contents](#contents)
 
 ## Comments
@@ -367,6 +376,19 @@ The comments that do belong in code are:
 * Documentation of public interfaces that other code depends on, such as ApexDoc on a shared service or the descriptions of an invocable action
 * Warnings of consequences, such as why a class runs `without sharing`
 * `TODO` notes that reference a work item
+
+The comments that do not belong in code are:
+
+| Comment | Instead |
+|---|---|
+| Change logs at the top of a class: dates, ticket numbers, and a description of each change | Commit messages. Source control holds the history |
+| Attributions, such as `// Added by J. Smith 2019` | Source control records who changed each line |
+| Commented-out code | Delete it. Source control remembers it |
+| Header blocks required on every class or method that restate its name, parameters, and return type | A clear name. Document only the public interfaces other code depends on |
+| Comments that repeat the code, such as `// update the account` above `update account;` | Nothing |
+| Banners, such as `// ***** HELPERS *****`, and comments after closing braces, such as `} // end for` | Classes and methods small enough not to need landmarks |
+
+[Back to Contents](#contents)
 
 ## Code Style
 
@@ -389,6 +411,27 @@ Keep related methods together within each group.  A set of methods that only cal
 #### Methods
 ##### Do one thing, with no side effects
 A method does what its name says and nothing else. A method named `isEligible` does not change a field, send an email, or write to the database.
+
+##### One level of abstraction per method
+Every statement in a method is at the same level of abstraction.  A method that mixes high-level steps with low-level detail makes the reader switch between them.  Move the detail into a method named for what it does, one level down.
+```java
+// AVOID - one high-level step, then string parsing, then DML
+public void submitOrder(Order submittedOrder) {
+	validate(submittedOrder);
+	String postalPrefix = submittedOrder.ShippingPostalCode.left(2);
+	submittedOrder.Region__c = WEST_POSTAL_PREFIXES.contains(postalPrefix) ? 'West' : 'East';
+	orderAccessor.updateRecords(new List<Order>{ submittedOrder });
+}
+
+// GOOD - each line is one step at the same level
+public void submitOrder(Order submittedOrder) {
+	validate(submittedOrder);
+	assignRegion(submittedOrder);
+	save(submittedOrder);
+}
+```
+
+The methods then follow the stepdown rule: each method is followed by the methods at the next level down, so the class reads from top to bottom.
 
 ##### Separate commands from queries
 A method either changes something (a command) or answers something (a query), never both.
@@ -425,6 +468,70 @@ public List<Contact> getContactsByAccountId(Id accountId) {
 		return new List<Contact>();
 	}
 	...
+}
+```
+
+##### Replace repeated switch statements with polymorphism
+A `switch` on a type, such as a record type or an account type, tends to appear wherever that type matters.  Every new type then means editing every `switch`.  Put each variation in a class that implements a shared interface, and choose the class in one place.
+```java
+// AVOID - repeated wherever the account type changes the behavior
+switch on customerAccount.Type {
+	when 'Partner' {
+		discountRate = PARTNER_DISCOUNT_RATE;
+	}
+	when else {
+		discountRate = STANDARD_DISCOUNT_RATE;
+	}
+}
+```
+
+```java
+// GOOD
+public interface PricingPolicyInterface {
+	Decimal getDiscountRate();
+}
+```
+
+```java
+public class PartnerPricingPolicy implements PricingPolicyInterface {
+	private static final Decimal DISCOUNT_RATE = 0.20;
+
+	public Decimal getDiscountRate() {
+		return DISCOUNT_RATE;
+	}
+}
+```
+
+```java
+public class PricingPolicyFactory {
+	public static PricingPolicyInterface forAccountType(String accountType) {
+		PricingPolicyInterface pricingPolicy;
+
+		switch on accountType {
+			when 'Partner' {
+				pricingPolicy = new PartnerPricingPolicy();
+			}
+			when else {
+				pricingPolicy = new StandardPricingPolicy();
+			}
+		}
+
+		return pricingPolicy;
+	}
+}
+```
+
+The one remaining `switch` lives in the factory, and a new account type is a new class plus one line there.
+
+##### Error handling is one thing
+A method that handles an error does nothing else.  The `try` block calls one method that does the work, and the method that catches the error only handles it.
+```java
+private HttpResponse send(HttpRequest request) {
+	try {
+		return new Http().send(request);
+	} catch (CalloutException e) {
+		throw new BillingSyncException('Could not reach the billing system.', e);
+	}
 }
 ```
 
@@ -590,6 +697,36 @@ Put each query in the data accessor for its object, as described in the [Data Ac
 
 [Back to Contents](#contents)
 
+## Objects and Data Structures
+
+#### Know which one you are writing
+* A **data structure** exposes its data and has no meaningful behavior. SObjects are data structures, and so are the `Request` and `Response` classes of an invocable action and a class that carries data to a Lightning Web Component
+* An **object** hides its data and exposes behavior through methods. Services, controllers, and data accessors are objects
+
+Keep the two apart.  A data structure with business logic, or an object that exposes its internal state as public fields, gets the disadvantages of both: new behavior is hard to add, and so is new data.
+```java
+// A data structure: fields only
+public class ContactSummary {
+	@AuraEnabled public Id contactId;
+	@AuraEnabled public String name;
+	@AuraEnabled public Integer openCaseCount;
+}
+```
+
+#### The Law of Demeter
+A method talks only to its immediate collaborators: its own class, objects it creates, objects passed to it as arguments, and its own fields.  It does not reach through one object to get another and call methods on that.
+```java
+// AVOID - reaches through three collaborators
+PaymentTerms terms = orderService.getCustomer(orderId).getBillingProfile().getPaymentTerms();
+
+// GOOD - asks the collaborator for what it needs
+PaymentTerms terms = orderService.getPaymentTermsByOrderId(orderId);
+```
+
+The law applies to objects, not data structures.  Reading SOQL relationship fields, such as `opportunity.Account.Owner.Email`, navigates a data structure and is fine.  Query every field the code reads, and use the safe navigation operator, `opportunity.Account?.Owner?.Email`, where a relationship may be empty.  When the same long relationship path appears in several places, query the field once in the data accessor and name it for what the code needs.
+
+[Back to Contents](#contents)
+
 
 
 ## Exceptions
@@ -632,6 +769,60 @@ public void reserveSeat(Seat requestedSeat) {
 	}
 	...
 }
+```
+
+#### Never swallow an exception
+A caught exception is handled: recovered from, rethrown with context, or recorded where someone will see it, such as a log record or a status field.  Catch the specific exceptions you can handle, not `Exception`.
+```java
+// AVOID - the failure disappears
+try {
+	sendInvoices(invoices);
+} catch (Exception e) {
+	System.debug(e);
+}
+```
+
+#### Provide context
+An exception message says what operation failed and for what.  When rethrowing, pass the original exception as the cause.
+```java
+throw new BillingSyncException('Could not send ' + invoices.size() + ' invoices to the billing system.', e);
+```
+
+#### Define exceptions for the caller's needs
+Define exception classes by how the caller responds, not by where the error came from.  When a callout can fail with a `CalloutException`, a `JSONException`, or an error status code, and the caller responds the same way to each, wrap them all in one exception the caller catches.
+
+#### Wrap what you do not own
+Callouts, managed package classes, and platform APIs sit behind a class you own.  The rest of the code depends on that class, which turns their errors into your exceptions and can be replaced with a mock in tests.  See [Unit Tests and Integration Tests](./UNIT_TEST_GUIDE.md#unit-tests-and-integration-tests).
+```java
+public with sharing class BillingSystemClient {
+
+	private static final Integer HTTP_OK = 200;
+
+	public void sendInvoices(List<Invoice__c> invoices) {
+		HttpResponse response = send(buildRequest(invoices));
+
+		if (response.getStatusCode() != HTTP_OK) {
+			throw new BillingSyncException(
+				'The billing system rejected ' + invoices.size() + ' invoices with status ' + response.getStatusCode() + '.'
+			);
+		}
+	}
+
+	private HttpResponse send(HttpRequest request) {
+		try {
+			return new Http().send(request);
+		} catch (CalloutException e) {
+			throw new BillingSyncException('Could not reach the billing system.', e);
+		}
+	}
+
+	private HttpRequest buildRequest(List<Invoice__c> invoices) {
+		...
+	}
+}
+```
+```java
+public class BillingSyncException extends Exception {}
 ```
 
 #### Write messages for the person reading them
