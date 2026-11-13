@@ -65,6 +65,10 @@ Clean design is how intent reaches both kinds of reader. Names carry most of it:
 - Invocable actions and action patterns
 - Calling prompt templates from Apex and validating their output
 
+**[DESIGN_PATTERNS_GUIDE.md](./DESIGN_PATTERNS_GUIDE.md)**
+- When to use Factory, Strategy, Builder, Facade, and Adapter
+- Examples of each in Salesforce
+
 **[SOLID_GUIDE.md](./SOLID_GUIDE.md)**
 - Single Responsibility Principle (SRP)
 - Open/Closed Principle (OCP)
@@ -215,6 +219,7 @@ Salesforce Clean Code Guide/
 ├── UNIT_TEST_GUIDE.md
 ├── DATA_MODEL_GUIDE.md
 ├── AGENTFORCE_GUIDE.md
+├── DESIGN_PATTERNS_GUIDE.md
 ├── SOLID_GUIDE.md
 ├── DAO Base Framework/
 │   └── classes/

@@ -115,7 +115,7 @@ Pick and use one word for an abstract concept and stick with it.  For example, w
 Do not use the same word for two different ideas.  If `add` inserts a record in one class, a method that joins two strings should be named `append` or `concatenate`, not `add`.
 
 ###### Use Solution Domain Names
-The people who read code are programmers, so use computer science terms, algorithm names, and pattern names when a class is that thing: `PricingPolicyFactory`, `AccountRatingQueueable`, `ContactTriggerFacade`.
+The people who read code are programmers, so use computer science terms, algorithm names, and pattern names when a class is that thing: `PricingPolicyFactory`, `AccountRatingQueueable`, `ContactTriggerFacade`.  The [Design Patterns Guide](./DESIGN_PATTERNS_GUIDE.md) describes the common patterns.
 
 ###### Use Problem Domain Names
 When there is no technical term for what the code does, use the name the business uses, such as `RenewalOpportunity` or `ServiceTerritory`.  A maintainer can then ask a domain expert what it means.
@@ -496,10 +496,10 @@ A `switch` on a type, such as a record type or an account type, tends to appear 
 // AVOID - repeated wherever the account type changes the behavior
 switch on customerAccount.Type {
 	when 'Partner' {
-		discountRate = PARTNER_DISCOUNT_RATE;
+		discount = calculateVolumeDiscount(orderAmount);
 	}
 	when else {
-		discountRate = STANDARD_DISCOUNT_RATE;
+		discount = orderAmount * STANDARD_DISCOUNT_RATE;
 	}
 }
 ```
@@ -507,16 +507,22 @@ switch on customerAccount.Type {
 ```java
 // GOOD
 public interface PricingPolicyInterface {
-	Decimal getDiscountRate();
+	Decimal calculateDiscount(Decimal orderAmount);
 }
 ```
 
 ```java
 public class PartnerPricingPolicy implements PricingPolicyInterface {
-	private static final Decimal DISCOUNT_RATE = 0.20;
+	private static final Decimal VOLUME_THRESHOLD = 100000;
+	private static final Decimal BASE_RATE = 0.10;
+	private static final Decimal VOLUME_RATE = 0.20;
 
-	public Decimal getDiscountRate() {
-		return DISCOUNT_RATE;
+	public Decimal calculateDiscount(Decimal orderAmount) {
+		return orderAmount * rateFor(orderAmount);
+	}
+
+	private Decimal rateFor(Decimal orderAmount) {
+		return orderAmount >= VOLUME_THRESHOLD ? VOLUME_RATE : BASE_RATE;
 	}
 }
 ```
@@ -540,7 +546,7 @@ public class PricingPolicyFactory {
 }
 ```
 
-The one remaining `switch` lives in the factory, and a new account type is a new class plus one line there.
+The one remaining `switch` lives in the factory, and a new account type is a new class plus one line there.  The [Design Patterns Guide](./DESIGN_PATTERNS_GUIDE.md) describes these as the Strategy and Factory patterns.
 
 ##### Error handling is one thing
 A method that handles an error does nothing else.  The `try` block calls one method that does the work, and the method that catches the error only handles it.
