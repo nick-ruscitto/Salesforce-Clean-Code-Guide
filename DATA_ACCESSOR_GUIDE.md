@@ -3,7 +3,7 @@
 
 **Introduction:**
 
-The main purpose of the Data Accessor Framework is twofold: First, it eliminates duplicate code by having any Query or DML logic for an object exist in one location. This acts as a Model layer in the Model-View-Controller (MVC) design pattern that Salesforce often follows with an Apex Controller being the Controller, and a Lightning Web Component being the View. The second purpose is to allow for easy mocking when unit testing. The purpose of a unit test is to test a single unit of code so that if defects are prevalent, the unit test can be ran to figure out where in the code there may be an issue. Mocking database actions are highly encouraged in unit tests where the particular unit of code under test does not care about what the setup of the data consists of. For example, if there is a method that takes in a list of Accounts and preforms some sort of calculation on a custom field and returns that number, the unit test shouldn't fail because the Account had a new field marked as required where that new field does not interact at all with the method under test. The results in a false negative error in the context of that particular unit test. Mocking can be used to prevent the database action which would cause the DML exception.
+The main purpose of the Data Accessor Framework is twofold: First, it eliminates duplicate code by having any Query or DML logic for an object exist in one location. This acts as a Model layer in the Model-View-Controller (MVC) design pattern that Salesforce often follows with an Apex Controller being the Controller, and a Lightning Web Component being the View. The second purpose is to allow for easy mocking when unit testing. The purpose of a unit test is to test a single unit of code so that if defects are prevalent, the unit test can be run to figure out where in the code there may be an issue. Mocking database actions are highly encouraged in unit tests where the particular unit of code under test does not care about what the setup of the data consists of. For example, if there is a method that takes in a list of Accounts and performs some sort of calculation on a custom field and returns that number, the unit test shouldn't fail because the Account had a new field marked as required where that new field does not interact at all with the method under test. This results in a false negative error in the context of that particular unit test. Mocking can be used to prevent the database action which would cause the DML exception.
 
 ## Components:
 
@@ -104,7 +104,7 @@ public inherited sharing class UserDataAccessorMock extends DmlBaseMock implemen
 These components are utilities that provide the DML logic for each object. This code was extracted out to prevent duplicate code within the DataAccessors which likely need DML operations.
 
 **DmlInterface:**
-Interface that manages the various methods to preform DML operations.
+Interface that manages the various methods to perform DML operations.
 
 
 **Code:**

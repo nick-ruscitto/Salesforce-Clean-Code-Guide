@@ -3,10 +3,7 @@
 
 **Preface:**
 
-Every Salesforce developer should know what a unit test is since they are required for produc-
-tion deployments, however, unit tests are not specific to Salesforce or Apex, they are an indus-
-try standard for just about every programming language and should be treated as such. Sales-
-force requires that 75% of code is covered in unit tests and that those unit tests pass in order
+Every Salesforce developer should know what a unit test is since they are required for production deployments, however, unit tests are not specific to Salesforce or Apex, they are an industry standard for just about every programming language and should be treated as such. Salesforce requires that 75% of code is covered in unit tests and that those unit tests pass in order
 to move code to production. This is good in theory since it forces developers to actually write
 the tests, however it has a pretty big side-effect in that many developers treat unit tests as an
 afterthought often writing them at the last minute, and writing bad tests just to get the required coverage.
@@ -37,10 +34,10 @@ Clean tests follow five rules that form the above acronym:
 **Independent:** Tests should not depend on each other. One test should not set up the conditions for the next test. You should be able to run each test independently and run the tests in any order you like. When tests depend on each other, then the first one to fail causes a cascade of downstream failures, making diagnosis difficult and hiding downstream defects.
 
 **Repeatable:** Tests should be repeatable in any environment. You should be able to run the
-tests in the production environment, in the QA environment, and on your laptop while riding home on the train without a network. If your tests aren't repeatable in any environment, then you'll always have an excuse for why they fail. You'll also find yourself unable to run the tests when the environment isn!t available.
+tests in the production environment, in the QA environment, and on your laptop while riding home on the train without a network. If your tests aren't repeatable in any environment, then you'll always have an excuse for why they fail. You'll also find yourself unable to run the tests when the environment isn't available.
 
 
-**Self-Validating:** The tests should have a boolean output. Either they pass or fail. You should not have to read through a log file to tell whether the tests pass. You should not have to manually compare two different text files to see whether the tests pass. If the tests aren!t self-validating, then failure can become subjective and running the tests can require a long manual evaluation.
+**Self-Validating:** The tests should have a boolean output. Either they pass or fail. You should not have to read through a log file to tell whether the tests pass. You should not have to manually compare two different text files to see whether the tests pass. If the tests aren't self-validating, then failure can become subjective and running the tests can require a long manual evaluation.
 
 **Timely:** The tests need to be written in a timely fashion. Unit tests should be written just before the production code that makes them pass. If you write tests after the production code, then you may find the production code to be hard to test. You may decide that some production code is too hard to test. You may not design the production code to be testable.
 
@@ -87,7 +84,7 @@ Many tests for this would look something like:
 		Test.stopTest();
 
 		Account queriedAccount = [SELECT Id, OwnerId FROM Account WHERE Id =:a.Id];
-		System.assertEquals(u.Id, queriedAccount.OwnerId);
+		Assert.areEqual(u.Id, queriedAccount.OwnerId);
 	}
 }
 ```
@@ -96,8 +93,7 @@ There are a few issues with this code; the method `changeAccountOwnership()` is 
 Single Responsibility Principle as it is not just responsible for changing the Account owner. It is
 also responsible for querying the Account and updating it. Because of this the unit test also
 has to worry about setting up data and interacting with the database. What this can result in is
-a false negative test run. Let’s assume this code makes its way to production and then a vali-
-dation rule is added on the User record. This unit test will now fail if not updated properly, but
+a false negative test run. Let’s assume this code makes its way to production and then a validation rule is added on the User record. This unit test will now fail if not updated properly, but
 the failure has nothing to do with the unit under test. Also, every other unit test that creates test Users will also fail. Having possibly hundreds of unit tests failing just because of a simple validation rule can cause a lot of overhead and unnecessary time fixing and deploying unit tests. The unit test also spends a lot of resources just setting up data that could cause these issues. Unless the responsibility of the unit under test specifically interacts with the database, the unit test should not do so. This can cause the test to take longer to run since it needs to create then destroy data, and this problem is exponential as more tests are created this way. Instead, mock objects should be created. This will ensure that the unit test won’t fail unless there is a direct issue with the production code. This will also cause the unit test to run faster since no creation and cleanup is necessary from the backend. The unit test name `testAccount()` is also not descriptive so when a user runs the test and views the output log, it would be difficult to tell what the test is supposed to do.
 
 Let’s take a look at how to write better production code and a better test:
@@ -142,7 +138,7 @@ private static Account buildMockAccount(Id ownerId) {
 
 	Account changedAccount = (Account) accountMock.getRecords()[0];
 
-	System.assertEquals(UserInfo.getUserId(), changedAccount.OwnerId);
+	Assert.areEqual(UserInfo.getUserId(), changedAccount.OwnerId);
 }
 
 @isTest static void changeAccountOwnership_givenUnknownAccount_exceptionShouldBeThrown() {
@@ -159,7 +155,7 @@ private static Account buildMockAccount(Id ownerId) {
 		}
 	Test.stopTest();
 
-	System.assertEquals(true, exceptionThrown);
+	Assert.isTrue(exceptionThrown);
 }
 ```
 

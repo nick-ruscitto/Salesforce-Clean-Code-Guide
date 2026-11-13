@@ -26,7 +26,7 @@ This section is borrowed from the [Angular Style Guide](https://angular.io/guide
 > -   **Avoid** indicates something you should almost never do unless you have a good reason for doing otherwise.
 > -   **Why?** gives reasons for following the previous recommendations.
 
-None of these rules should be taken uncritically, however. This guide isn't designed to be used as a book to throw at someone, and if you have a reason to contradict any of the recommendations in here,
+None of these rules should be taken uncritically, however. This guide isn't designed to be used as a book to throw at someone.
 
 ## When To Use LWCs
 
@@ -36,7 +36,7 @@ Salesforce recommends that all new Lightning development is completed using Ligh
 
 ### Style
 
-Take advantage of the fact that Salesforce transpiles your JavaScript and write the latest JavaScript wherever possible, such as: use `let` and `const` over `var`, use `class` rather than manipulate object prototypes directly, and so on. At the time of writing this, the JavaScript style guide is incomplete, so refer to the [Airbnb JavaScript style guide](https://github.com/airbnb/javascript) in the meantime.
+Take advantage of the fact that Salesforce transpiles your JavaScript and write the latest JavaScript wherever possible, such as: use `let` and `const` over `var`, use `class` rather than manipulate object prototypes directly, and so on. For anything this guide does not cover, refer to the [Airbnb JavaScript style guide](https://github.com/airbnb/javascript).
 
 ### Components
 
@@ -50,6 +50,18 @@ Like Aura components, Lightning Web Components should follow the following rules
 Additionally, considering the nature of Lightning Web Components,
 
 -   **Consider** writing components that resemble HTML elements as much as possible.
+-   **Do** use `lwc:if`, `lwc:elseif`, and `lwc:else` for conditional rendering, not `if:true` and `if:false`
+
+```html
+<template lwc:if={hasContacts}>
+	<!-- contact list -->
+</template>
+<template lwc:else>
+	<p>No contacts found.</p>
+</template>
+```
+
+-   **Do** refresh data loaded with `@wire` using `refreshApex` on the stored wire result, and refresh standard components on the page by dispatching `RefreshEvent` from `lightning/refresh`
 
 ## Component Properties
 
@@ -70,6 +82,8 @@ Additionally, considering the nature of Lightning Web Components,
 1. Class methods
 
 > Why? This order resembles conventions within languages like Java; public properties come first, followed by protected and private properties, constructors, and methods.
+
+-   **Avoid** `@track` on fields that are reassigned. Every field is reactive; `@track` is only needed when the code changes the properties of an object or the elements of an array in place.
 
 -   **Do** place decorators over the property or function they're supposed to decorate
 
@@ -151,7 +165,7 @@ export default class GoodExampleComponent extends LightningElement {
 
 -   **Avoid** component inheritance
 
-> Why? Doing so may cause snowballing complexity. Although the framework requires that we extend base LWC components, continuing to further extend these components leads to the same problems as inheritance in languages like Java. In general we should prefer [composition over inheritence](https://en.wikipedia.org/wiki/Composition_over_inheritance), though "composition" in this case takes a slightly more literal meaning, meaning "your component's markup uses another component".
+> Why? Doing so may cause snowballing complexity. Although the framework requires that we extend base LWC components, continuing to further extend these components leads to the same problems as inheritance in languages like Java. In general we should prefer [composition over inheritance](https://en.wikipedia.org/wiki/Composition_over_inheritance), though "composition" in this case takes a slightly more literal meaning, meaning "your component's markup uses another component".
 
 ```javascript
 // bad, where `MyLightningElement` extends `LightningElement`
@@ -318,7 +332,7 @@ Lightning Web Components use the [Jest](https://jestjs.io/) testing framework.
 
 -   **Do** write tests!
 
-    > Why? Writing tests allows you to automatically verify the correctness of your code. This goes without saying. Jest tests in particular have more usefulness than just providing code coverage, however, as they can serve as unit tests, integration tests, and even UI tests. Although as of writing this Salesforce doesn't require that you write tests, unlike Apex. Your codebase will be stronger with them, and we strongly encourage you to do so. We also encourage you to write useful tests.
+    > Why? Writing tests allows you to automatically verify the correctness of your code. This goes without saying. Jest tests in particular have more usefulness than just providing code coverage, however, as they can serve as unit tests, integration tests, and even UI tests. Unlike Apex, Salesforce does not require Jest tests for deployment. Your codebase will be stronger with them, and we strongly encourage you to do so. We also encourage you to write useful tests.
 
 -   **Do** organize your test suites around components
     > Why? By testing components, you can test the functionality of your component with a great degree of granularity. Generally, you should use `describe` for a component, and `it` for specific tests for that component. This produces a nice, readable test output. Larger test suites may have child `describe`s.
@@ -354,7 +368,7 @@ describe('myComponent', () => {
 
 ## Documentation
 
-At the time of writing this, LWC doesn't support documentation in the same way that Aura does. One workaround you could use is [JSDoc](https://jsdoc.app/index.html). JSDoc is usually used to generate web-based documentation for APIs and libraries, although some IDEs are smart enough to provide auto-completion or other contextual information when you specify JSDoc for your functions and classes.
+LWC has no equivalent of Aura documentation. Use [JSDoc](https://jsdoc.app/index.html). JSDoc is usually used to generate web-based documentation for APIs and libraries, although some IDEs are smart enough to provide auto-completion or other contextual information when you specify JSDoc for your functions and classes.
 
 ```javascript
 // inside of some service module...
@@ -381,7 +395,7 @@ For both HTML and JavaScript, LWCs are supported by the excellent JavaScript for
 
 ## Resources
 
--   [Airbnb JavaScript style guide](https://github.com/airbnb/javascript). Since we don't have a purely JavaScript style guide at the time of writing this, this should serve as a good stand-in.
+-   [Airbnb JavaScript style guide](https://github.com/airbnb/javascript), for JavaScript this guide does not cover.
 -   [Salesforce's LWC developer documentation](https://developer.salesforce.com/docs/component-library/documentation/lwc/lwc.get_started_introduction)
 -   [LWC Recipes](https://github.com/trailheadapps/lwc-recipes). Please note that Salesforce themselves may contradict some of the rules stated in this style guide.
 -   [Jest JS](https://jestjs.io/)

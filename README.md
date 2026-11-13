@@ -23,13 +23,13 @@ This guide provides coding standards, architectural patterns, and working exampl
 - Component styling guidelines
 - Testing strategies for LWCs
 
-**[AURA_STYLE_GUIDE.md](./AURA_STYLE_GUIDE.md)**
+**[AURA_STYLE_GUIDE.md](./AURA_STYLE_GUIDE.md)** (Aura Component era)
 - Aura component naming conventions
 - Component, application, and event patterns
 - Single responsibility principles for Aura
 
-**[FRONT_END_STYLE_GUIDE.md](./FRONT_END_STYLE_GUIDE.md)**
-- HTML, CSS, and JavaScript formatting
+**[FRONT_END_STYLE_GUIDE.md](./FRONT_END_STYLE_GUIDE.md)** (Visualforce era)
+- HTML, CSS, and JavaScript formatting outside of Lightning Web Components
 - Naming conventions (kebab-case for classes/IDs)
 - Front-end code organization
 

@@ -10,7 +10,8 @@ private class DmlBaseTest {
 		return testAccount;
 	}
 
-	static TestMethod void insertRecords_givenAccount_shouldGetId() {
+	@isTest
+	static void insertRecords_givenAccount_shouldGetId() {
 		Account testAccount = createTestAccount();
 
 		DmlStub stub = new DmlStub();
@@ -18,10 +19,11 @@ private class DmlBaseTest {
 			stub.insertRecords(new List<Account> { testAccount });
 		Test.stopTest();
 
-		System.assertNotEquals(null, testAccount.Id);
+		Assert.isNotNull(testAccount.Id);
 	}
 
-	static TestMethod void updateRecords_givenAccount_shouldGetUpdatedAccount() {
+	@isTest
+	static void updateRecords_givenAccount_shouldGetUpdatedAccount() {
 		String oldAccountNumber = '123';
 		String newAccountNumber = '456';
 
@@ -35,14 +37,15 @@ private class DmlBaseTest {
 			stub.updateRecords(new List<Account> { testAccount });
 		Test.stopTest();
 
-		System.assertNotEquals(null, testAccount.Id);
+		Assert.isNotNull(testAccount.Id);
 		Account updatedAccount = [SELECT AccountNumber FROM Account WHERE Id = :testAccount.Id];
 
-		System.assertNotEquals(oldAccountNumber, updatedAccount.AccountNumber);
-		System.assertEquals(newAccountNumber, updatedAccount.AccountNumber);
+		Assert.areNotEqual(oldAccountNumber, updatedAccount.AccountNumber);
+		Assert.areEqual(newAccountNumber, updatedAccount.AccountNumber);
 	}
 
-	static TestMethod void upsertRecords_givenNewAccount_shouldGetId() {
+	@isTest
+	static void upsertRecords_givenNewAccount_shouldGetId() {
 		Account testAccount = createTestAccount();
 
 		DmlStub stub = new DmlStub();
@@ -50,10 +53,11 @@ private class DmlBaseTest {
 			stub.upsertRecords(new List<Account> { testAccount });
 		Test.stopTest();
 
-		System.assertNotEquals(null, testAccount.Id);
+		Assert.isNotNull(testAccount.Id);
 	}
 
-	static TestMethod void deleteRecords_givenOldAccount_shouldReturnEmptyList() {
+	@isTest
+	static void deleteRecords_givenOldAccount_shouldReturnEmptyList() {
 		Account testAccount = createTestAccount();
 		insert testAccount; 
 
@@ -63,6 +67,6 @@ private class DmlBaseTest {
 		Test.stopTest();
 
 		List<Account> accountList = [SELECT Id FROM Account];
-		System.assert(accountList.isEmpty());
+		Assert.isTrue(accountList.isEmpty());
 	}
 }

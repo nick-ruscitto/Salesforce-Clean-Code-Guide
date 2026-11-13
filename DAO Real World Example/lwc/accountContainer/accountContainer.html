@@ -1,14 +1,14 @@
 <template>
 	<lightning-card title="Account Overview" icon-name="standard:account">
 		<div class="slds-p-around_medium">
-			<template if:true={errorMessage}>
+			<template lwc:if={errorMessage}>
 				<div class="slds-notify slds-notify_alert slds-theme_error slds-m-bottom_medium" role="alert">
 					<span class="slds-assistive-text">error</span>
 					<h2>{errorMessage}</h2>
 				</div>
 			</template>
 
-			<template if:true={account}>
+			<template lwc:if={account}>
 				<!-- Account Details Section -->
 				<c-account-details account={account}></c-account-details>
 
@@ -21,7 +21,7 @@
 				</div>
 			</template>
 
-			<template if:false={account}>
+			<template lwc:else>
 				<lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
 			</template>
 		</div>

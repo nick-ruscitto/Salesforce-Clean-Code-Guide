@@ -1,20 +1,25 @@
 # Apex Style Guide
 
 ## Contents
-1. [Naming Conventions](#markdown-header-naming)
+1. [Naming Conventions](#naming)
 	* Classes
 	* Interfaces
 	* Variables
 	* Properties
 	* Methods
 	* Files
-2. [Formatting](#markdown-header-formatting)
+2. [Formatting](#formatting)
 	* Methods
 	* Code Blocks
 	* Classes
 	* SOQL & SOSL
-3. [Comments](#markdown-header-comments)
-4. [Exceptions](#markdown-header-exceptions)
+3. [Comments](#comments)
+4. [Code Style](#code-style)
+	* Triggers
+	* Apex Classes
+	* Asynchronous Apex
+	* SOQL Queries
+5. [Exceptions](#exceptions)
 
 ## Naming
 Appropriate naming helps us glean useful information quickly.  Conventions facilitate self-documenting code that improves readability and consistency.
@@ -47,7 +52,7 @@ public List<List<Integer>> getFlaggedCells() {
 
 The method name of the second example not only allows us to quickly determine the purpose of the method, but we can also guess what kind of application it belongs to (looks like minesweeper to me).
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 #### General Naming Rules
 ###### Use Intention-Revealing Names
@@ -93,7 +98,7 @@ Pick and use one word for an abstract concept and stick with it.  For example, w
 * Shorter names are generally better than longer ones, as long as they are clear
 * Add no more to the name than is necessary
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 #### Naming Classes
 * Class names should be in pascal case
@@ -147,7 +152,7 @@ public String AccountName {get; set;}
 * Method names should have a verb and follow one of the patterns below
 	* verb-Noun or verb-Noun-How (getAccountsFromId, getUsers)
 	* Verb-adj-noun (getSelectedUsers, hasSelectedItems)
-	* Ver-adj (isDeleted) Boolean returns always use present tense states of being: is, has, are, etc
+	* Verb-adj (isDeleted) Boolean returns always use present tense states of being: is, has, are, etc
 * Accessors, mutators, and predicates should be named for their value and prefixed with _get_, _set_, and _is_ 
 * Test methods should follow this syntax: `methodUnderTest_testCondition_expectedResult`
 ```java
@@ -160,19 +165,20 @@ public static String createIndividualizedGreeting(String name) {
 @isTest
 static void createIndividualizedGreeting_givenName_shouldAppendNameToTheEndOfGreeting() {
 	String greeting = Greeter.createIndividualizedGreeting('Gob');
-	System.assertEquals('Hello, Gob', greeting);
+	Assert.areEqual('Hello, Gob', greeting);
 }
 ```
 
-#### Naming Visualforce Pages & Components
+#### Naming Visualforce Pages & Components (Visualforce era)
 * Follow the same rules as classes, so `CustomerAccountDetails`, or `SearchAccounts`
 * Follow the rules for variables above when naming apex tags and their attributes
 
 #### Naming Files
 * for the most part, the file name should reflect the name of your class
-* prefix file names to make sure that related files show up next to each other since Salesforce does not give us foldering
+* in a Salesforce DX project, group related files into folders under the package directory, such as `force-app/main/default/classes/accounts/`
+* prefix related names consistently, such as `AccountController`, `AccountDAO`, and `AccountDataAccessor`, so they also sort together in Setup, which has no folders
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 ## Formatting
 
@@ -233,7 +239,7 @@ Indentation should use tabs, not spaces and tab size should equal 4 spaces
 ##### Line Wrapping
 When an expression will not fit on a single line, break it according to these general principles:
 * Start thinking about breaking to the new line once you hit around 50 characters
-* Once you hve hit 80 characters in a line you have gone too far and need to break that line up
+* Once you have hit 80 characters in a line you have gone too far and need to break that line up
 * Break before an operator
 * Break after a comma
 * Prefer higher-level breaks to lower-level breaks
@@ -259,7 +265,7 @@ someReallyReallyLongName = someOtherLongVariableName * (someLongName +
 ```
 
 #### Formatting Methods
-Methods should start have no space between the method name and the params `(` and then one space between the ending `)` and the beginning `{`
+Methods should have no space between the method name and the params `(` and then one space between the ending `)` and the beginning `{`
 ```java
 public void updateContact(Contact contactToUpdate) {
 	...
@@ -267,7 +273,7 @@ public void updateContact(Contact contactToUpdate) {
 ```
 
 One thing to note about methods is that they should be kept as small as they need to be.  Methods should have only 1 responsibility, so if you 
-start to see your method going over around 5 lines of logic start to prepare for some refactoring. Methods should also accept no more than 3 arguments. Using more than 3 arguments is an indication that your method is doing too much. Methods should avoid using Booleans as arguments. It is much better to evaluate the boolean and call two differnt methods based on the boolean value. This enforces single responsibility principles.
+start to see your method going over around 5 lines of logic start to prepare for some refactoring. Methods should also accept no more than 3 arguments. Using more than 3 arguments is an indication that your method is doing too much. Methods should avoid using Booleans as arguments. It is much better to evaluate the boolean and call two different methods based on the boolean value. This enforces single responsibility principles.
 
 #### Formatting Code Blocks
 The only real rule for formatting code blocks is to try to keep them short, and only 1 level of indentation.  Having deep nesting in your code blocks makes it difficult to read, it also screams that your code block/method is doing a little too much. 
@@ -334,7 +340,7 @@ List<Person__c> peopleNamedGob = [
 		AND LastName__c = 'Bluth'
 ];
 ```
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 ## Comments
 > Every time you write a comment, you should grimace and feel the failure of your ability of expression - _Robert C. Martin_
@@ -355,27 +361,35 @@ Always bulkify queries in triggers to avoid hitting governor limits and improve 
 Use the [facade pattern](https://en.wikipedia.org/wiki/Facade_pattern "Description of the Facade Pattern") to simplify your triggers.  Do not put any actual business logic inside the trigger, extract that out into another facade class.
 
 ##### Prevent recursion
-Take appropriate measures to prevent unwanted recursive execution of triggers.  For example, updating a record in the `after update` trigger of the same object or a related object could invoke the trigger recursively.  Use `before update` if possible or use a static flag variable to prevent recursion.  When you use `after update` to make changes on the same record, you need to use `update` statement to persist the changes, and that results in firing before/after triggers again.  You can avoid that by using `before update` triggers as you wouldn't then need to use the update statement.  However, certain situations require the use of `after update` in which case you should use flag variables to prevent recursion.
+Take appropriate measures to prevent unwanted recursive execution of triggers.  For example, updating a record in the `after update` trigger of the same object or a related object could invoke the trigger recursively.  Use `before update` if possible.  When you use `after update` to make changes on the same record, you need to use `update` statement to persist the changes, and that results in firing before/after triggers again.  You can avoid that by using `before update` triggers as you wouldn't then need to use the update statement.
+
+When `after update` is required, track the Ids of the records already processed in a static set rather than a static Boolean flag.  A trigger runs once per batch of 200 records, so a flag set by the first batch skips every batch after it.
+```java
+public with sharing class AccountRollupRecalculation {
+
+	private static Set<Id> processedAccountIds = new Set<Id>();
+
+	public static void recalculate(List<Account> changedAccounts) {
+		List<Account> unprocessedAccounts = new List<Account>();
+
+		for (Account changedAccount : changedAccounts) {
+			if (!processedAccountIds.contains(changedAccount.Id)) {
+				unprocessedAccounts.add(changedAccount);
+			}
+		}
+
+		processedAccountIds.addAll(new Map<Id, Account>(unprocessedAccounts).keySet());
+		// recalculate unprocessedAccounts
+	}
+}
+```
 
 ##### Single trigger for one object
 Only create 1 trigger per object.
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 #### Apex Classes
-##### Future methods
-Avoid writing logic directly in future methods.  Instead, write the logic in a separate method so that it can be used in both the future and immediate method.
-```java
-@future
-public static void updateAccountFuture(Id accountId) {
-	updateAccount(accountId);
-}
-
-public static void updateAccount(Id accountId) {
-	...
-}
-```
-
 ##### Group your methods
 Group related methods together.  This makes the code easier to navigate, and also helps to point out where you may have a new class hiding in your existing class.
 
@@ -407,7 +421,60 @@ public void doSomeStuff(Account userAccount) {
 
 Nested if statements should go into their own method.
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
+
+#### Asynchronous Apex
+##### Prefer Queueable to future methods
+Use a `Queueable` class for asynchronous work.  Unlike future methods, a Queueable accepts objects as well as primitives, can chain to another job, returns a job Id that can be monitored, and can attach a `Finalizer` that runs whether the job succeeds or fails.
+
+##### Keep logic out of the asynchronous entry point
+Avoid writing logic directly in the `execute` method of a Queueable or in a future method.  Instead, write the logic in a separate class so that it can be used both asynchronously and immediately, and tested without the asynchronous wrapper.
+```java
+public with sharing class AccountRatingQueueable implements Queueable {
+
+	private Set<Id> accountIds;
+
+	public AccountRatingQueueable(Set<Id> accountIds) {
+		this.accountIds = accountIds;
+	}
+
+	public void execute(QueueableContext context) {
+		System.attachFinalizer(new AccountRatingFinalizer(accountIds));
+		AccountRating.recalculate(accountIds);
+	}
+}
+```
+```java
+public with sharing class AccountRatingFinalizer implements Finalizer {
+
+	private Set<Id> accountIds;
+
+	public AccountRatingFinalizer(Set<Id> accountIds) {
+		this.accountIds = accountIds;
+	}
+
+	public void execute(FinalizerContext context) {
+		if (context.getResult() == ParentJobResult.UNHANDLED_EXCEPTION) {
+			// record the failure for accountIds
+		}
+	}
+}
+```
+
+##### Future methods (legacy)
+Existing future methods follow the same rule: the future method only calls the method that holds the logic.
+```java
+@future
+public static void updateAccountFuture(Id accountId) {
+	updateAccount(accountId);
+}
+
+public static void updateAccount(Id accountId) {
+	...
+}
+```
+
+[Back to Contents](#contents)
 
 #### SOQL Queries
 * Avoid putting SOQL queries in any sort of loop (for, forEach, while, etc)
@@ -431,7 +498,7 @@ If we just centralized that query into its own data accessor class and method, i
 
 Put the above SOQL query inside a class named `AccountDataAccessor`, inside a method called `getAccountById(Id accountId)`.  
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 
 
@@ -440,7 +507,7 @@ Exceptions should always be handled.  You need to catch exceptions at minimum at
 
 You should not throw standard exceptions up to the user. Create a custom exception with a user-friendly error message in there.
 
-Exceptions for visualforce controllers should be caught, then added to the PageMessages.
+Exceptions for Visualforce controllers (Visualforce era) should be caught, then added to the PageMessages.
 
 Exceptions thrown from `@AuraEnabled` methods should be an `AuraHandledException` with a friendly error message. Set the message with `setMessage` as well as the constructor, so that `getMessage()` returns it in unit tests. Build these exceptions in one place:
 ```java
@@ -457,4 +524,4 @@ public with sharing class UserFacingError {
 throw UserFacingError.withMessage('Account ID is required');
 ```
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)

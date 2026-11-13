@@ -23,8 +23,8 @@ private class AccountControllerTest {
 			Account result = AccountController.getAccountById(testAccountId);
 		Test.stopTest();
 
-		System.assertEquals(testAccountId, result.Id, 'Account ID should match');
-		System.assertEquals('Acme Corporation', result.Name, 'Account name should match');
+		Assert.areEqual(testAccountId, result.Id, 'Account ID should match');
+		Assert.areEqual('Acme Corporation', result.Name, 'Account name should match');
 	}
 
 	@isTest
@@ -44,8 +44,8 @@ private class AccountControllerTest {
 			}
 		Test.stopTest();
 
-		System.assertEquals(true, exceptionThrown, 'Should throw AuraHandledException');
-		System.assertEquals('Account ID is required', exceptionMessage, 'Should have correct error message');
+		Assert.isTrue(exceptionThrown, 'Should throw AuraHandledException');
+		Assert.areEqual('Account ID is required', exceptionMessage, 'Should have correct error message');
 	}
 
 	@isTest
@@ -65,6 +65,6 @@ private class AccountControllerTest {
 			}
 		Test.stopTest();
 
-		System.assertEquals(true, exceptionThrown, 'Should throw AuraHandledException for non-existent account');
+		Assert.isTrue(exceptionThrown, 'Should throw AuraHandledException for non-existent account');
 	}
 }

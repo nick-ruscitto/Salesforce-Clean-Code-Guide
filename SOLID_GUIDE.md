@@ -1,12 +1,12 @@
 # SOLID
 
 ## Contents
-1. [The SOLID Principle](#markdown-header-solid)
-2. [Single Responsibility Principle (SRP)](#markdown-header-single-responsibility)
-3. [Open Close Principle (OCP)](#markdown-header-open-close)
-4. [Liskov Substitution Principle (LSP)](#markdown-header-liskov-substitution)
-5. [Interface Segrgation Principle (ISP)](#markdown-header-interface-segregation)
-6. [Dependency Inversion Principle (DIP)](#markdown-header-dependency-inversion)
+1. [The SOLID Principle](#solid)
+2. [Single Responsibility Principle (SRP)](#single-responsibility)
+3. [Open Close Principle (OCP)](#open-close)
+4. [Liskov Substitution Principle (LSP)](#liskov-substitution)
+5. [Interface Segregation Principle (ISP)](#interface-segregation)
+6. [Dependency Inversion Principle (DIP)](#dependency-inversion)
 
 ## SOLID
 **SOLID** is short for basic five principles of OOP, which was introduced in the early 2000s 
@@ -21,7 +21,7 @@ The SOLID abbreviation is defined as follows:
  - I: Interface segregation principle
  - D: Dependency inversion principle
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 
 
@@ -48,8 +48,8 @@ public class AccountController {
 
 There are two violations of SRP, do you see them?
 
-* *AccountController* is doing to much, it can change an owner and send emails.
-* *changeAccountOwnership* is doing to much, it queries an account, it changes the owner and it does DML on an account.
+* *AccountController* is doing too much, it can change an owner and send emails.
+* *changeAccountOwnership* is doing too much, it queries an account, it changes the owner and it does DML on an account.
 	
 Now look at the example below and see how we have corrected them.
 ```java
@@ -94,7 +94,7 @@ The advantages of SRP are as follows:
 	* Small classes can be modified easily
 	* Small classes are more readable
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 
 
@@ -170,7 +170,7 @@ public class AreaCalculator {
 
 In this way we can continue to extend the functionality without affecting any existing functionality.
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 
 
@@ -247,7 +247,7 @@ public class Penguin extends Bird {
 This is but one simple example of how to correct a violation of this principle, however, 
 this situation can manifest in a broad variety of ways, and is not always easy to identify.
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 
 
@@ -331,7 +331,7 @@ public class Movie implements ProductInterface, MovieInterface {
 }
 ```
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 
 
@@ -405,4 +405,4 @@ Double floorArea = floorPlan.calculateFloorArea();
 
 By injecting the shapes, `FloorPlan` depends only on the `ShapeInterface` abstraction. Any shape that implements it works, including a test double. The [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) applies the same principle: a controller holds a DAO interface, and a test replaces it with a mock.
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)

@@ -1,4 +1,6 @@
-# Lightning Style Guide
+# Aura Components Style Guide (Aura Component era)
+
+New Lightning development uses [Lightning Web Components](./LWC_STYLE_GUIDE.md). This guide applies to maintaining existing Aura components.
 
 ## Naming
 Component names should be descriptive as to what the component does.

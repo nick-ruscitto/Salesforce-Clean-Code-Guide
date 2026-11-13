@@ -21,14 +21,14 @@
 			</div>
 		</div>
 		<div class="slds-card__body slds-card__body_inner">
-			<template if:true={errorMessage}>
+			<template lwc:if={errorMessage}>
 				<div class="slds-notify slds-notify_alert slds-theme_error" role="alert">
 					<span class="slds-assistive-text">error</span>
 					<h2>{errorMessage}</h2>
 				</div>
 			</template>
 
-			<template if:true={showNewContactForm}>
+			<template lwc:if={showNewContactForm}>
 				<div class="slds-m-bottom_medium">
 					<c-new-contact-form
 						account-id={accountId}
@@ -38,7 +38,7 @@
 				</div>
 			</template>
 
-			<template if:true={hasContacts}>
+			<template lwc:if={hasContacts}>
 				<div class="slds-grid slds-wrap slds-gutters">
 					<template for:each={contacts} for:item="contact">
 						<div key={contact.Id} class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-3">
@@ -59,7 +59,7 @@
 				</div>
 			</template>
 
-			<template if:false={hasContacts}>
+			<template lwc:else>
 				<div class="slds-align_absolute-center slds-p-vertical_large">
 					<p class="slds-text-color_weak">No contacts found for this account.</p>
 				</div>

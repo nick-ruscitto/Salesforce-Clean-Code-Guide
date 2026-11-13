@@ -1,4 +1,5 @@
 import { LightningElement, api, wire } from 'lwc';
+import { refreshApex } from '@salesforce/apex';
 import getContactsByAccountId from '@salesforce/apex/ContactController.getContactsByAccountId';
 
 export default class AccountContactList extends LightningElement {
@@ -6,9 +7,13 @@ export default class AccountContactList extends LightningElement {
 	contacts = [];
 	errorMessage;
 	showNewContactForm = false;
+	wiredContactsResult;
 
 	@wire(getContactsByAccountId, { accountId: '$accountId' })
-	wiredContacts({ error, data }) {
+	wiredContacts(result) {
+		this.wiredContactsResult = result;
+		const { error, data } = result;
+
 		if (data) {
 			this.contacts = data;
 			this.errorMessage = undefined;
@@ -42,7 +47,6 @@ export default class AccountContactList extends LightningElement {
 
 	@api
 	refreshContacts() {
-		// Force wire adapter to refresh
-		return eval("$A").get('e.force:refreshView').fire();
+		return refreshApex(this.wiredContactsResult);
 	}
 }

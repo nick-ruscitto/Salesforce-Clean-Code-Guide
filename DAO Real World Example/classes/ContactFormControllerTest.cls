@@ -19,14 +19,14 @@ private class ContactFormControllerTest {
 		Test.stopTest();
 
 		List<Contact> insertedContacts = (List<Contact>) contactMock.getRecords();
-		System.assertEquals(1, insertedContacts.size(), 'Should insert exactly one contact');
+		Assert.areEqual(1, insertedContacts.size(), 'Should insert exactly one contact');
 
 		Contact insertedContact = insertedContacts[0];
-		System.assertEquals('John', insertedContact.FirstName, 'First name should match');
-		System.assertEquals('Doe', insertedContact.LastName, 'Last name should match');
-		System.assertEquals('john.doe@example.com', insertedContact.Email, 'Email should match');
-		System.assertEquals(testAccountId, insertedContact.AccountId, 'AccountId should match');
-		System.assertNotEquals(null, resultId, 'Should return a Contact Id');
+		Assert.areEqual('John', insertedContact.FirstName, 'First name should match');
+		Assert.areEqual('Doe', insertedContact.LastName, 'Last name should match');
+		Assert.areEqual('john.doe@example.com', insertedContact.Email, 'Email should match');
+		Assert.areEqual(testAccountId, insertedContact.AccountId, 'AccountId should match');
+		Assert.isNotNull(resultId, 'Should return a Contact Id');
 	}
 
 	@isTest
@@ -47,11 +47,11 @@ private class ContactFormControllerTest {
 			}
 		Test.stopTest();
 
-		System.assertEquals(true, exceptionThrown, 'Should throw AuraHandledException');
-		System.assertEquals('Last Name is required', exceptionMessage, 'Should have correct error message');
+		Assert.isTrue(exceptionThrown, 'Should throw AuraHandledException');
+		Assert.areEqual('Last Name is required', exceptionMessage, 'Should have correct error message');
 
 		List<Contact> insertedContacts = (List<Contact>) contactMock.getRecords();
-		System.assertEquals(0, insertedContacts.size(), 'Should not insert any contacts');
+		Assert.areEqual(0, insertedContacts.size(), 'Should not insert any contacts');
 	}
 
 	@isTest
@@ -71,11 +71,11 @@ private class ContactFormControllerTest {
 			}
 		Test.stopTest();
 
-		System.assertEquals(true, exceptionThrown, 'Should throw AuraHandledException');
-		System.assertEquals('Account is required', exceptionMessage, 'Should have correct error message');
+		Assert.isTrue(exceptionThrown, 'Should throw AuraHandledException');
+		Assert.areEqual('Account is required', exceptionMessage, 'Should have correct error message');
 
 		List<Contact> insertedContacts = (List<Contact>) contactMock.getRecords();
-		System.assertEquals(0, insertedContacts.size(), 'Should not insert any contacts');
+		Assert.areEqual(0, insertedContacts.size(), 'Should not insert any contacts');
 	}
 
 	@isTest
@@ -91,12 +91,12 @@ private class ContactFormControllerTest {
 		Test.stopTest();
 
 		List<Contact> insertedContacts = (List<Contact>) contactMock.getRecords();
-		System.assertEquals(1, insertedContacts.size(), 'Should insert exactly one contact');
+		Assert.areEqual(1, insertedContacts.size(), 'Should insert exactly one contact');
 
 		Contact insertedContact = insertedContacts[0];
-		System.assertEquals(null, insertedContact.FirstName, 'First name should be null');
-		System.assertEquals('Doe', insertedContact.LastName, 'Last name should match');
-		System.assertEquals(null, insertedContact.Email, 'Email should be null');
-		System.assertEquals(testAccountId, insertedContact.AccountId, 'AccountId should match');
+		Assert.areEqual(null, insertedContact.FirstName, 'First name should be null');
+		Assert.areEqual('Doe', insertedContact.LastName, 'Last name should match');
+		Assert.areEqual(null, insertedContact.Email, 'Email should be null');
+		Assert.areEqual(testAccountId, insertedContact.AccountId, 'AccountId should match');
 	}
 }

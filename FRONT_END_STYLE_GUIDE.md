@@ -1,11 +1,13 @@
 # Front End Style Guide
 
+These rules apply to HTML, CSS, and JavaScript outside of Lightning Web Components: Visualforce pages, static resources, and other standalone front-end code. For Lightning Web Components, follow the [LWC Style Guide](./LWC_STYLE_GUIDE.md).
+
 ## Contents
-1. [Naming](#markdown-header-naming)
+1. [Naming](#naming)
 	* HTML
 	* CSS
 	* Javascript
-2. [Formatting](#markdown-header-formatting)
+2. [Formatting](#formatting)
 	* HTML
 	* Javascript
 
@@ -47,12 +49,12 @@ When naming functions, make sure to follow the same rules as the Apex style guid
 * if the function sets a value, "set" should be prepended to the method name
 * if the function returns a boolean, make sure to phrase the name as a question, e.g. `isEmpty()`, `hasChildren()`, `canConnect()`
 
-[Back to Contents](#markdown-header-contents)
+[Back to Contents](#contents)
 
 ## Formatting
 
 ### HTML
-The very first thing in your html file (even before the html tag) should be the doctype (salesforce adds this for you).  The doctype is important 
+The very first thing in your html file (even before the html tag) should be the doctype (Visualforce adds this for you).  The doctype is important 
 because it tells the browser what XHTML standards you will be using.  At minimum, your page should have this:
 ```html
 <!doctype html>
@@ -141,7 +143,6 @@ var num = x + y;
 ```
 
 #### Functions
-(I might take this out b/c I think that this messes w/ IE, need to verify)
 Anonymous functions are one of the things that makes Javascript great, but you should still name them.
 * Naming your anonymous function helps with debugging, promotes writing reusable code, and eliminates ambiguities so other developers do not need to read the entire anonymous function body to learn what it does
 
@@ -157,7 +158,10 @@ setTimeout(function sayHello() {
 }, 1000);
 ```
 
-**Always avoid putting things on the global scope, scope your functions to an IIFE**
+**Always avoid putting things on the global scope, scope your functions to an IIFE (Visualforce era)**
+
+Lightning Web Component modules are already scoped. This pattern applies to scripts loaded on Visualforce pages and as static resources.
+
 When we do not scope our functions and variables, they automatically go to the global scope where everything can access them.
 
 Instead, use the Revealing Module Pattern to encapsulate your code:

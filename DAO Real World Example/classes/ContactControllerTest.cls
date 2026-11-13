@@ -26,11 +26,11 @@ private class ContactControllerTest {
 			List<Contact> results = ContactController.getContactsByAccountId(testAccountId);
 		Test.stopTest();
 
-		System.assertEquals(2, results.size(), 'Should return 2 contacts');
-		System.assertEquals('John', results[0].FirstName, 'First contact first name should match');
-		System.assertEquals('Doe', results[0].LastName, 'First contact last name should match');
-		System.assertEquals('Jane', results[1].FirstName, 'Second contact first name should match');
-		System.assertEquals('Smith', results[1].LastName, 'Second contact last name should match');
+		Assert.areEqual(2, results.size(), 'Should return 2 contacts');
+		Assert.areEqual('John', results[0].FirstName, 'First contact first name should match');
+		Assert.areEqual('Doe', results[0].LastName, 'First contact last name should match');
+		Assert.areEqual('Jane', results[1].FirstName, 'Second contact first name should match');
+		Assert.areEqual('Smith', results[1].LastName, 'Second contact last name should match');
 	}
 
 	@isTest
@@ -44,7 +44,7 @@ private class ContactControllerTest {
 			List<Contact> results = ContactController.getContactsByAccountId(testAccountId);
 		Test.stopTest();
 
-		System.assertEquals(0, results.size(), 'Should return empty list');
+		Assert.areEqual(0, results.size(), 'Should return empty list');
 	}
 
 	@isTest
@@ -64,7 +64,7 @@ private class ContactControllerTest {
 			}
 		Test.stopTest();
 
-		System.assertEquals(true, exceptionThrown, 'Should throw AuraHandledException');
-		System.assertEquals('Account ID is required', exceptionMessage, 'Should have correct error message');
+		Assert.isTrue(exceptionThrown, 'Should throw AuraHandledException');
+		Assert.areEqual('Account ID is required', exceptionMessage, 'Should have correct error message');
 	}
 }

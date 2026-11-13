@@ -172,7 +172,7 @@ static void getContactsByAccountId_givenValidId_contactsShouldBeReturned() {
 
     List<Contact> results = ContactController.getContactsByAccountId(testAccountId);
 
-    System.assertEquals(2, results.size());
+    Assert.areEqual(2, results.size());
 }
 ```
 
@@ -188,8 +188,8 @@ Contact newContact = new Contact(LastName = 'Doe', AccountId = testAccountId);
 Id resultId = ContactFormController.createContact(newContact);
 
 List<Contact> insertedContacts = (List<Contact>) contactMock.getRecords();
-System.assertEquals(1, insertedContacts.size());
-System.assertEquals('Doe', insertedContacts[0].LastName);
+Assert.areEqual(1, insertedContacts.size());
+Assert.areEqual('Doe', insertedContacts[0].LastName);
 ```
 
 Verify insert operations by inspecting the mock's in-memory records.

@@ -23,8 +23,8 @@ private class AccountDataAccessorTest {
 			Account result = dao.getAccountFromId(testAccount.Id);
 		Test.stopTest();
 
-		System.assertEquals(testAccount.Id, result.Id, 'Should return account with matching Id');
-		System.assertEquals('Acme Corporation', result.Name, 'Should return account with correct Name');
+		Assert.areEqual(testAccount.Id, result.Id, 'Should return account with matching Id');
+		Assert.areEqual('Acme Corporation', result.Name, 'Should return account with correct Name');
 	}
 
 	@isTest
@@ -42,7 +42,7 @@ private class AccountDataAccessorTest {
 			List<Account> results = dao.getAccountsFromIdSet(accountIds);
 		Test.stopTest();
 
-		System.assertEquals(2, results.size(), 'Should return 2 accounts');
-		System.assertNotEquals(null, results[0].Name, 'Should include Name field');
+		Assert.areEqual(2, results.size(), 'Should return 2 accounts');
+		Assert.isNotNull(results[0].Name, 'Should include Name field');
 	}
 }

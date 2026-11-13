@@ -36,10 +36,10 @@ private class ContactDataAccessorTest {
 			Contact result = dao.getContactFromId(testContact.Id);
 		Test.stopTest();
 
-		System.assertEquals(testContact.Id, result.Id, 'Should return contact with matching Id');
-		System.assertEquals('John', result.FirstName, 'Should return contact with correct FirstName');
-		System.assertEquals('Doe', result.LastName, 'Should return contact with correct LastName');
-		System.assertNotEquals(null, result.Email, 'Should include Email field');
+		Assert.areEqual(testContact.Id, result.Id, 'Should return contact with matching Id');
+		Assert.areEqual('John', result.FirstName, 'Should return contact with correct FirstName');
+		Assert.areEqual('Doe', result.LastName, 'Should return contact with correct LastName');
+		Assert.isNotNull(result.Email, 'Should include Email field');
 	}
 
 	@isTest
@@ -57,9 +57,9 @@ private class ContactDataAccessorTest {
 			List<Contact> results = dao.getContactsFromIdSet(contactIds);
 		Test.stopTest();
 
-		System.assertEquals(2, results.size(), 'Should return 2 contacts');
-		System.assertNotEquals(null, results[0].FirstName, 'Should include FirstName field');
-		System.assertNotEquals(null, results[0].LastName, 'Should include LastName field');
+		Assert.areEqual(2, results.size(), 'Should return 2 contacts');
+		Assert.isNotNull(results[0].FirstName, 'Should include FirstName field');
+		Assert.isNotNull(results[0].LastName, 'Should include LastName field');
 	}
 
 	@isTest
@@ -71,13 +71,13 @@ private class ContactDataAccessorTest {
 			List<Contact> results = dao.getContactsFromAccountId(testAccount.Id);
 		Test.stopTest();
 
-		System.assertEquals(2, results.size(), 'Should return 2 contacts for the account');
+		Assert.areEqual(2, results.size(), 'Should return 2 contacts for the account');
 
 		for (Contact c : results) {
-			System.assertEquals(testAccount.Id, c.AccountId, 'All returned contacts should belong to the account');
-			System.assertNotEquals(null, c.FirstName, 'Should include FirstName field');
-			System.assertNotEquals(null, c.LastName, 'Should include LastName field');
-			System.assertNotEquals(null, c.Email, 'Should include Email field');
+			Assert.areEqual(testAccount.Id, c.AccountId, 'All returned contacts should belong to the account');
+			Assert.isNotNull(c.FirstName, 'Should include FirstName field');
+			Assert.isNotNull(c.LastName, 'Should include LastName field');
+			Assert.isNotNull(c.Email, 'Should include Email field');
 		}
 	}
 }
