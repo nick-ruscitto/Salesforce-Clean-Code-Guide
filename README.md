@@ -60,11 +60,6 @@ Clean design is how intent reaches both kinds of reader. Names carry most of it:
 - Validation rules, descriptions, and help text
 - Designing for scale
 
-**[AGENTFORCE_GUIDE.md](./AGENTFORCE_GUIDE.md)**
-- Designing and naming for AI agents
-- Invocable actions and action patterns
-- Calling prompt templates from Apex and validating their output
-
 **[DESIGN_PATTERNS_GUIDE.md](./DESIGN_PATTERNS_GUIDE.md)**
 - When to use Factory, Strategy, Builder, Facade, and Adapter
 - Examples of each in Salesforce
@@ -75,6 +70,12 @@ Clean design is how intent reaches both kinds of reader. Names carry most of it:
 - Liskov Substitution Principle (LSP)
 - Interface Segregation Principle (ISP)
 - Dependency Inversion Principle (DIP)
+
+**[AGENTFORCE_GUIDE.md](./AGENTFORCE_GUIDE.md)**
+- Designing and naming for AI agents
+- Agent Script
+- Invocable actions and action patterns
+- Calling prompt templates from Apex and validating their output
 
 ### Example Projects
 
@@ -218,9 +219,9 @@ Salesforce Clean Code Guide/
 ├── DATA_ACCESSOR_GUIDE.md
 ├── UNIT_TEST_GUIDE.md
 ├── DATA_MODEL_GUIDE.md
-├── AGENTFORCE_GUIDE.md
 ├── DESIGN_PATTERNS_GUIDE.md
 ├── SOLID_GUIDE.md
+├── AGENTFORCE_GUIDE.md
 ├── DAO Base Framework/
 │   └── classes/
 │       ├── DmlInterface.cls

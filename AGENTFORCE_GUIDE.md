@@ -1,12 +1,15 @@
 # Agentforce Guide
 
+> **Work in progress.** Agentforce and Agent Script are changing quickly. This guide is incomplete, and its examples may trail the current platform. Check the syntax against the [Agent Script Reference](https://developer.salesforce.com/docs/ai/agentforce/guide/ascript-reference.html).
+
 ## Contents
 1. [Designing for Agents](#designing-for-agents)
 2. [Naming for Agents](#naming-for-agents)
-3. [Invocable Actions](#invocable-actions)
-4. [Action Patterns](#action-patterns)
-5. [Prompt Templates](#prompt-templates)
-6. [Metadata](#metadata)
+3. [Agent Script](#agent-script)
+4. [Invocable Actions](#invocable-actions)
+5. [Action Patterns](#action-patterns)
+6. [Prompt Templates](#prompt-templates)
+7. [Metadata](#metadata)
 
 ## Designing for Agents
 An agent reads an org the way a new developer does, without being able to ask what anything means. It chooses an action from the action's label and description, understands a field from its name and help text, and acts on what an output says it contains. Every rule in this guide's other sections applies, and the cost of breaking one is higher: a misleading name confuses a developer, but an agent acts on it.
@@ -16,11 +19,64 @@ An agent reads an org the way a new developer does, without being able to ask wh
 ## Naming for Agents
 The [naming rules](./APEX_STYLE_GUIDE.md#naming) apply to everything an agent reads.
 
-* **Reveal intent.** An action's label is a verb phrase that says what it does: "Summarize Case", not "Case Helper". Every input and output is named for exactly what it holds
+* **Reveal intent.** A subagent's name and description say what job it does and when to route to it. An action's label is a verb phrase that says what it does: "Summarize Case", not "Case Helper". Every input and output is named for exactly what it holds
 * **Avoid disinformation.** An output is named and described for what it actually contains. An output called "Redlined Document" must not hold a clean copy
 * **Make meaningful distinctions.** An agent cannot choose between two actions named "Get Case Details" and "Get Case Info". Merge them, or name each for what sets it apart
 * **Pick one word per concept.** Use the same word for a concept in field names, action descriptions, and agent instructions. If the field is `Disposition__c`, the instructions say "disposition", not "decision" or "outcome"
 * **Use positive Booleans.** An input named `includeClosedCases` is clearer than `excludeOpenCases`
+
+[Back to Contents](#contents)
+
+## Agent Script
+Agent Script is the language that defines an agent in Agentforce Builder: its subagents, variables, actions, and instructions. A script has two kinds of instruction. **Logic instructions** run the same way every time: conditions, running an action, setting a variable. **Prompt instructions**, written after a pipe (`|`), are natural language that the model interprets.
+
+#### Decide what is deterministic
+Anything that must happen the same way every time is a logic instruction: business rules, security checks, required steps, and the order of actions. Leave to the model only what needs judgment: understanding the request and wording the reply.
+
+#### Enforce rules in logic, not in wording
+A rule written as a sentence in a prompt is a request. A rule written as a condition is enforced. Make an action available only when its precondition holds, rather than telling the model not to use it.
+
+#### One job per subagent
+A subagent has a single responsibility, a name that states it, and a description that says when to route to it. A subagent that needs "and" to describe is two subagents.
+
+#### Keep state in variables
+Store what the agent has learned in variables rather than relying on the model to remember it. Name variables by the [naming rules](./APEX_STYLE_GUIDE.md#naming): `is_verified`, not `flag` or `not_unverified`.
+
+#### Chain actions deterministically
+When one action's output feeds another, run the first action in a logic instruction and store its output in a variable. Do not ask the model to carry the value across.
+
+#### Treat the script as code
+* Keep scripts in source control and review changes to them
+* State each instruction once. An instruction repeated across subagents will be changed in only one of them
+* Delete instructions that no longer apply; do not comment them out
+
+```
+variables:
+    is_verified: mutable boolean = False
+        description: "True once the user's identity has been confirmed."
+    case_id: mutable string = ""
+        description: "The Id of the case the user is asking about."
+    case_summary: mutable string = ""
+        description: "A plain-language summary of the case."
+
+subagent case_help:
+    label: "Case Help"
+    description: "Answers questions about one support case and closes it on request."
+    reasoning:
+        instructions: ->
+            if @variables.case_id != "":
+                run @actions.summarize_case
+                    with case_id = @variables.case_id
+                    set @variables.case_summary = @outputs.summary
+            | Answer the user's question from {!@variables.case_summary}.
+            | If the summary does not answer it, say so.
+        actions:
+            close_case: @actions.close_case
+                with case_id = @variables.case_id
+                available when @variables.is_verified == True
+```
+
+The summary always runs when a case is known, and the case can be closed only for a verified user. Neither depends on the model following an instruction.
 
 [Back to Contents](#contents)
 
@@ -106,7 +162,7 @@ public with sharing class CaseSummaryAction {
 An action translates requests into calls on the classes that already hold the logic, and turns the results into text the agent can read. It holds no business logic itself, so a screen and an agent share one implementation.
 
 #### Resolve context from the record Id
-An agent passes the Id of the record the user is viewing, which may be the record the action needs or one related to it. Resolve it in one value object, named for what it identifies, so every action does not repeat the same lookups.
+An agent passes the Id of the record the user is viewing, which may be the record the action needs or one related to it. Resolve it in one value object, named for what it identifies, so every action does not repeat the same lookups. Store the resolved Id in a script variable so later actions receive it directly.
 
 ```java
 public with sharing class ProjectSubject {
@@ -185,7 +241,7 @@ subscribe(CHANNEL, -1, (message) => {
 ```
 
 #### Confirm before outside effects
-An action that sends a message, deletes data, or reaches a system outside Salesforce requires the user's confirmation before it runs. Turn on the action's user confirmation setting, and have the agent show what will be sent or changed.
+An action that sends a message, deletes data, or reaches a system outside Salesforce requires the user's confirmation before it runs. Set `require_user_confirmation: True` on the action's definition in the script, and have the agent show what will be sent or changed.
 
 [Back to Contents](#contents)
 
@@ -233,7 +289,7 @@ public with sharing class PromptTemplateInvoker implements PromptTemplateInvoker
 ```
 
 #### Use text inputs for templates an agent calls
-Give a template that an agent calls text inputs, and have the agent fill them from the outputs of earlier actions. The agent then chains the actions: one action gathers the facts, and the template writes from them.
+Give a template that an agent calls text inputs, filled from the outputs of earlier actions: one action gathers the facts, and the template writes from them. Chain the two in a logic instruction, as described in [Chain actions deterministically](#chain-actions-deterministically).
 
 #### State what to do when an input is empty
 A template's instructions say what to return when a required input is empty, so it never writes something from nothing.
