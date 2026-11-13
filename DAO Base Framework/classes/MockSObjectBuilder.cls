@@ -3,7 +3,6 @@ public with sharing class MockSObjectBuilder {
 
 	public SObjectType mockType {get; private set;}
 	private String starterSObject;
-	private static Integer idCount = 1;
 	private Map<SObjectField, String> fieldToValue = new Map<SObjectField, String>();
 	private Map<ChildRelationship, List<String>> relationshipToChild = new Map<ChildRelationship, List<String>>();
 
@@ -51,14 +50,7 @@ public with sharing class MockSObjectBuilder {
 	}
 
 	public static String getMockId(SObjectType objectType) {
-		String nextIdCount = String.valueOf(idCount++);
-		return objectType.getDescribe().getKeyPrefix()
-		+ getFillerZeros(nextIdCount)
-		+ nextIdCount;
-	}
-
-	private static String getFillerZeros(String nextIdCount) {
-		return '0'.repeat(12-nextIdCount.length());
+		return MockIdGenerator.getMockId(objectType);
 	}
 
 	public ChildRelationship getChildRelationship(String childLabel) {

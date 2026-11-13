@@ -74,7 +74,7 @@ Additionally, considering the nature of Lightning Web Components,
 -   **Do** place decorators over the property or function they're supposed to decorate
 
 ```javascript
-export default Example extends LightningElement {
+export default class Example extends LightningElement {
     // bad
     @api
     bar;
@@ -103,21 +103,24 @@ export default Example extends LightningElement {
 import { LightningElement } from 'lwc';
 
 export default class ExampleComponent extends LightningElement {
-	name;
+	storedName;
 	accessCount = 0;
 
-	// bad
 	@api
+	get name() {
+		return this.storedName;
+	}
+
+	// bad
 	set name(value) {
 		// this is the side effect - we're modifying a value outside of the current scope
 		this.accessCount++;
-		this.name = value;
+		this.storedName = value;
 	}
 
 	// good
-	@api
 	set name(value) {
-		this.name = value;
+		this.storedName = value;
 	}
 }
 ```
@@ -152,7 +155,7 @@ export default class GoodExampleComponent extends LightningElement {
 
 ```javascript
 // bad, where `MyLightningElement` extends `LightningElement`
-export default MyNewComponent extends MyLightningElement {
+export default class MyNewComponent extends MyLightningElement {
 	// ...
 }
 ```
@@ -170,7 +173,7 @@ export default MyNewComponent extends MyLightningElement {
 ```javascript
 // lwc/myCmp/myCmp.js
 
-import { LightningElement } from 'lwc';
+import { LightningElement, api } from 'lwc';
 import { isRecordDisplayed } from './util';
 import { specialSort } from './appModules';
 
@@ -182,7 +185,7 @@ export default class MyComp extends LightningElement {
 	}
 
 	get speciallySortedItems() {
-		return this.items.sort(specialSort);
+		return [...this.items].sort(specialSort);
 	}
 }
 ```
@@ -202,19 +205,16 @@ export function isRecordDisplayed(record) {
 // an "application" module, with code that could pertain to multiple
 // components in the same application
 
-import * as sortMethods from './sortMethods';
-
 /*
 	when it comes to service modules, something you can do if your API is very
-	large is to import all non-default contents from sibling modules and
-	re-export them as one module.
+	large is to re-export the contents of sibling modules from one module.
 	that way, `specialSort` from `sortMethods` can be imported elsewhere like:
 
-	import { specialSort } from './sortMethods';
+	import { specialSort } from 'c/appModules';
  */
 
 
-export { ...sortMethods };
+export * from './sortMethods';
 ```
 
 ```javascript
@@ -258,9 +258,9 @@ export default class Example extends LightningElement {
 	compValue = [1, 2, 3];
 
 	renderedCallback() {
-		this.dispatchEvent('myevent', {
+		this.dispatchEvent(new CustomEvent('myevent', {
 			detail: this.compValue
-		});
+		}));
 	}
 }
 
@@ -283,9 +283,9 @@ export default class Example extends LightningElement {
 	renderedCallback() {
 		// this clones the array, breaking the reference
 		// it's the same as `this.compValue.slice()`
-		this.dispatchEvent('myevent', {
+		this.dispatchEvent(new CustomEvent('myevent', {
 			detail: [...this.compValue]
-		});
+		}));
 	}
 }
 ```
@@ -297,13 +297,13 @@ export default class Example extends LightningElement {
 ```javascript
 export default class Example extends LightningElement {
 	// not preferable - doesn't describe what handler is doing
-	handleClick(event) {
-		updateFields();
+	handleClick() {
+		this.updateFields();
 	}
 
 	// preferable - indicates what happens when event is handled
-	updateFieldsOnClick(event) {
-		updateFields();
+	updateFieldsOnClick() {
+		this.updateFields();
 	}
 }
 ```

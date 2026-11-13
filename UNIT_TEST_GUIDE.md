@@ -71,8 +71,9 @@ Many tests for this would look something like:
 	insert u;
 
 	User u2 = new User();
-	u2.FirstName = 'Test2'
+	u2.FirstName = 'Test2';
 	//setting required fields
+	insert u2;
 
 	Account a = new Account();
 	a.Name = 'Test';
@@ -103,82 +104,57 @@ Let’s take a look at how to write better production code and a better test:
 
 Production Code:
 ```java
-public AccountDAO accountAccessor = new AccountDataAccessor();
-public UserDAO userAccessor = new userDataAccessor();
-public String userId = userAccessor.getCurrentUserId();
+public with sharing class AccountController {
 
-public void changeAccountOwnership(String accountId) {
-	Account account = this.accountAccessor.getAccountFromId(accountId);
-	account.OwnerId = userId;
-	this.accountAccessor.updateRecords(new List<Account>{account});
+	public static AccountDAO accountAccessor = new AccountDataAccessor();
+
+	public static void changeAccountOwnership(Id accountId) {
+		Account account = accountAccessor.getAccountFromId(accountId);
+		account.OwnerId = UserInfo.getUserId();
+		accountAccessor.updateRecords(new List<Account>{ account });
+	}
 }
 ```
 
 Unit Test:
 
 ```java
-private static User buildMockUser(String userId) {
+private static Account buildMockAccount(Id ownerId) {
 	//MockSObjectBuilder is a class that can generate an SObject using JSON without inserting anything into the database while still allowing the developer to set fields that otherwise are not writable
-	MockSObjectBuilder mockBuilder = new MockSObjectBuilder(User.sObjectType);
-	mockBuilder.setField('Id', userId);
-	//setting other fields
-	User testUser = (User) mockBuilder.build();
-
-	return testUser;
-}
-
-private static Account buildMockAccount(String accountId, String userId) {
 	MockSObjectBuilder mockBuilder = new MockSObjectBuilder(Account.sObjectType);
-	mockBuilder.setField('Id', accountId);
-	mockBuilder.setField('OwnerId', userId);
-	//setting other fields
-	Account testAccount = (Account) mockBuilder.build();
-	
-	return testUser;
+	mockBuilder.setField('Id', MockIdGenerator.getMockId(Account.sObjectType));
+	mockBuilder.setField('OwnerId', ownerId);
+
+	return (Account) mockBuilder.build();
 }
 
-@isTest static void changeAccountOwnership_givenNewUser_accountOwnerShouldUpdate() {
-	String testUserId = MockIdGenerator.getMockId(User.sObjectType);
-	String testUserId2 = MockIdGenerator.getMockId(User.sObjectType);
-	String testAccountId = MockIdGenerator.getMockId(Account.sObjectType);
+@isTest static void changeAccountOwnership_givenAccount_currentUserShouldBecomeOwner() {
+	Id previousOwnerId = MockIdGenerator.getMockId(User.sObjectType);
+	Account testAccount = buildMockAccount(previousOwnerId);
 
-	User testUser = buildMockUser(testUserId);
-	UserDataAccessorMock userMock = new UserDataAccessorMock();
-	userMock.currentUser = testUser;
-
-	Account testAccount = buildMockAccount(testAccountId, testUserId2);
 	AccountDataAccessorMock accountMock = new AccountDataAccessorMock();
-	accountMock.mockDatabaseAccounts = new List<Account>{testAccount};
+	accountMock.addExistingRecords(new List<Account>{ testAccount });
+	AccountController.accountAccessor = accountMock;
 
 	Test.startTest();
-		AccountController.changeAccountOwnership(testAccountId);
+		AccountController.changeAccountOwnership(testAccount.Id);
 	Test.stopTest();
 
-	Account changedAccount = accountMock.getRecords()[0];
+	Account changedAccount = (Account) accountMock.getRecords()[0];
 
-	System.assertEquals(testUserId, changedAccount.OwnerId);
+	System.assertEquals(UserInfo.getUserId(), changedAccount.OwnerId);
 }
 
-@isTest static void changeAccountOwnership_givenInvalidAccount_exceptionShouldBeThrown() {
-	String testUserId = MockIdGenerator.getMockId(User.sObjectType);
-	String testUserId2 = MockIdGenerator.getMockId(User.sObjectType);
-	String testAccountId = MockIdGenerator.getMockId(Account.sObjectType);
-	String testAccountId2 = MockIdGenerator.getMockId(Account.sObjectType);
-
-	User testUser = buildMockUser(testUserId);
-	UserDataAccessorMock userMock = new UserDataAccessorMock();
-	userMock.currentUser = testUser;
-
-	Account testAccount = buildMockAccount(testAccountId, testUserId2);
-	AccountDataAccessorMock accountMock = new AccountDataAccessorMock();
-	accountMock.mockDatabaseAccounts = new List<Account>{testAccount};
+@isTest static void changeAccountOwnership_givenUnknownAccount_exceptionShouldBeThrown() {
+	AccountController.accountAccessor = new AccountDataAccessorMock();
+	Id unknownAccountId = MockIdGenerator.getMockId(Account.sObjectType);
 
 	Boolean exceptionThrown = false;
 
 	Test.startTest();
 		try {
-			AccountController.changeAccountOwnership(testAccountId2);
-		} catch(Exception e) { //specific exception should be caught, not a generic Exception, this is just an example
+			AccountController.changeAccountOwnership(unknownAccountId);
+		} catch (QueryException e) {
 			exceptionThrown = true;
 		}
 	Test.stopTest();
@@ -187,7 +163,7 @@ private static Account buildMockAccount(String accountId, String userId) {
 }
 ```
 
-Much like `@testSetup` methods, the `buildMockUser()` and `buildMockAccount()` methods are used to create the mock records so that a database interaction is not needed. This test method now only checks to make sure the method it is testing changes the owner of the Account record. The test methods for the methods in Data Accessor classes should actually run DML and queries across the associated objects to account for backend interactions. This example also shows both a positive and negative test case. Unit tests should cover the full spectrum of possible outcomes of the code, not just what ideally should happen.
+Much like `@testSetup` methods, the `buildMockAccount()` method creates the mock record so that a database interaction is not needed. This test method now only checks to make sure the method it is testing changes the owner of the Account record. The test methods for the methods in Data Accessor classes should actually run DML and queries across the associated objects to account for backend interactions. This example also shows both a positive and negative test case. Unit tests should cover the full spectrum of possible outcomes of the code, not just what ideally should happen.
 
 **Recap:**
 

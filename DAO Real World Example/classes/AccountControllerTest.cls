@@ -16,7 +16,7 @@ private class AccountControllerTest {
 		Account testAccount = buildMockAccount(testAccountId, 'Acme Corporation');
 
 		AccountDataAccessorMock accountMock = new AccountDataAccessorMock();
-		accountMock.insertRecords(new List<Account>{ testAccount });
+		accountMock.addExistingRecords(new List<Account>{ testAccount });
 		AccountController.accountAccessor = accountMock;
 
 		Test.startTest();

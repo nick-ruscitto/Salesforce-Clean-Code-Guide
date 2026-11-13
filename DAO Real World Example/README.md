@@ -167,7 +167,7 @@ static void getContactsByAccountId_givenValidId_contactsShouldBeReturned() {
     Contact contact2 = buildMockContact(testAccountId, 'Jane', 'Smith');
 
     ContactDataAccessorMock contactMock = new ContactDataAccessorMock();
-    contactMock.insertRecords(new List<Contact>{ contact1, contact2 });
+    contactMock.addExistingRecords(new List<Contact>{ contact1, contact2 });
     ContactController.contactAccessor = contactMock;
 
     List<Contact> results = ContactController.getContactsByAccountId(testAccountId);

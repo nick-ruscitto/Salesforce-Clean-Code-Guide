@@ -94,14 +94,15 @@ Remember to close all your elements (including empty ones like the input below):
 	<input type="text" />
 	<p>Some paragraph</p>
 </form>
+```
 
 ```html
-// GOOD
+<!-- GOOD -->
 <button type="button">
 	Click Me
 </button>
 
-// BAD
+<!-- BAD -->
 <button type = "button">
 	Click Me
 </button>
@@ -128,7 +129,7 @@ Just like our Apex style guide, use tabs instead of spaces for indents.
 
 All if statements should have an opening curly bracket at the end of the starting line, and the closing one on a new line (even if the block is only 1 line long).
 ```javascript
-if(arr.isEmpty()) {
+if (arr.length === 0) {
 	return ERROR_MESSAGE;
 }
 ```
@@ -185,11 +186,12 @@ window.revealedModule = (function() {
 	}
 
 	function publicGetName() {
-		privateFunction();
+		logName();
+		return privateVar;
 	}
 
 	// Private methods
-	function privateFunction() {
+	function logName() {
 		console.log("Name: " + privateVar);
 	}
 })();

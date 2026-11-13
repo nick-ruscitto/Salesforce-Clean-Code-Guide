@@ -55,35 +55,39 @@ Now look at the example below and see how we have corrected them.
 ```java
 public class AccountController {
 	public AccountDAO accountDataAccessor = new AccountDataAccessor();
-	public void changeAccountOwnership(String accountId) {
-		Account account = accountDataAccessor.queryAccountById(accountId);
+
+	public void changeAccountOwnership(Id accountId) {
+		Account account = accountDataAccessor.getAccountFromId(accountId);
 		account.OwnerId = UserInfo.getUserId();
-		accountDataAccessor.updateAccount();
+		accountDataAccessor.updateRecords(new List<Account>{ account });
 	}
 }
 ```
 
 ```java
-public interface AccountDAO {
-	Account queryAccountById(String accountId);
-	void updateAccount(Account account);
+public interface AccountDAO extends DmlInterface {
+	Account getAccountFromId(Id accountId);
 }
 ```
 
 ```java
-public class AccountDataAccessor implements AccountDAO {
-	public Account queryAccountById(String accountId) {
+public class AccountDataAccessor extends DmlBase implements AccountDAO {
+	public Account getAccountFromId(Id accountId) {
 		//Query logic
 	}
-	
-	public void updateAccount(Account account) {
-		//update logic
+}
+```
+
+```java
+public class AccountOwnerNotification {
+	public void sendOwnerEmail() {
+		//send email logic
 	}
 }
 ```
 
 Can you see the difference?
-By creating the Data Accessor interface we have created a class/method pairing that handle all database interactions for Accounts.
+By creating the Data Accessor interface we have created a class/method pairing that handles all database interactions for Accounts, and the owner email now has a class of its own.
 
 The advantages of SRP are as follows:
 	* It makes code as easy as possible to reuse
@@ -107,11 +111,11 @@ public class AreaCalculator {
 	public Double calculateArea(List<Object> shapes) {
 		Double area = 0;
 		for (Object shape : shapes) {
-			if (shape.type = Rectangle) {
+			if (shape instanceof Rectangle) {
 				Rectangle rectangle = (Rectangle) shape;
 				area += rectangle.Width * rectangle.Height;
 			} else {
-				Circle circle = (Circle)shape;
+				Circle circle = (Circle) shape;
 				area += circle.Radius * circle.Radius * Math.PI;
 			}
 		}
@@ -126,7 +130,7 @@ Now try adding a new shape to the calculation, do you see how this can get out o
 So lets follow OCP and allow our functionality to be extended.
 ```java
 public abstract class Shape {
-	public abstract double Area();
+	public abstract Double calculateArea();
 }
 ```
 
@@ -151,6 +155,19 @@ public class Circle extends Shape {
 }
 ```
 
+```java
+public class AreaCalculator {
+	public Double calculateArea(List<Shape> shapes) {
+		Double area = 0;
+		for (Shape shape : shapes) {
+			area += shape.calculateArea();
+		}
+
+		return area;
+	}
+}
+```
+
 In this way we can continue to extend the functionality without affecting any existing functionality.
 
 [Back to Contents](#markdown-header-contents)
@@ -162,14 +179,13 @@ In this way we can continue to extend the functionality without affecting any ex
 This states *that if class B is a child of class A, then A can be replaced by B, without changing
 anything in a program*. In other words, the LSP principle states that you should not encounter
 unexpected results if child (derived) classes are used instead of parent classes.
-*Rectangle-Square Problem*
 
 ```java
 public virtual class Bird {
-	public virtual void setLocation(double longitude, double latitude) {
+	public virtual void setLocation(Double longitude, Double latitude) {
 		//logic
 	}
-	public virtual void setAltitude(double altitude) {
+	public virtual void setAltitude(Double altitude) {
 		//logic
 	}
 	public virtual void draw() {
@@ -180,8 +196,8 @@ public virtual class Bird {
 
 ```java
 public class Penguin extends Bird {
-	public override void setAltitude(double altitude) {
-		////altitude can't be set because penguins can't fly
+	public override void setAltitude(Double altitude) {
+		//altitude can't be set because penguins can't fly
 		//this method does nothing
 	}
 }
@@ -199,7 +215,7 @@ the existing code and account for the special cases involving the delinquent sub
 So how do we solve our problem?
 ```java
 public virtual class Bird {
-	public virtual void setLocation(double longitude, double latitude) {
+	public virtual void setLocation(Double longitude, Double latitude) {
 		//logic
 	}
 	public virtual void draw() {
@@ -210,7 +226,7 @@ public virtual class Bird {
 
 ```java
 public virtual class FlightfulBird extends Bird {
-	public virtual void setAltitude(double altitude) {
+	public virtual void setAltitude(Double altitude) {
 		//logic
 	}
 }
@@ -218,11 +234,11 @@ public virtual class FlightfulBird extends Bird {
 
 ```java
 public class Penguin extends Bird {
-	public override void setLocation(double altitude) {
+	public override void setLocation(Double longitude, Double latitude) {
 		//logic
 	}
-	
-	public override void draw(double altitude) {
+
+	public override void draw() {
 		//logic
 	}
 }
@@ -237,8 +253,8 @@ this situation can manifest in a broad variety of ways, and is not always easy t
 
 ## Interface Segregation
 In programming, the interface segregation principle states that no client should be forced to depend on methods it does not use.
-Put more simply: Do not add additional functionality to an existing interface by adding new methods.
-Instead, create a new interface and let your class implement multiple interfaces if needed.
+Put more simply: keep interfaces small, so a class implements only the methods it uses.
+When a class would have to leave a method unsupported, split the interface and let the class implement only the interfaces it needs.
 
 Look at the example below, can you see the problem?
 ```java
@@ -249,20 +265,22 @@ public interface ProductInterface {
 ```
 
 ```java
-public class Movie Implements ProductInterface {
+public class Movie implements ProductInterface {
 	private String movieName;
-	
+
 	public String getName() {
 		return movieName;
 	}
 
 	public String getAuthor() {
-		return new CustomExpection('Method not supported!');
+		throw new UnsupportedOperationException('Method not supported!');
 	}
 }
 ```
 
-As we remember from LSP, if a method does nothing or just returns an exception you have a major problem.
+As we remember from LSP, if a method does nothing or just throws an exception you have a major problem.
+
+`UnsupportedOperationException` here is a custom exception class (`public class UnsupportedOperationException extends Exception {}`).
 
 So lets fix this.
 ```java
@@ -284,7 +302,7 @@ public interface MovieInterface {
 ```
 
 ```java
-public class Books implements ProductInterface, BookInterface {
+public class Book implements ProductInterface, BookInterface {
 	private String bookName;
 	private String author;
 
@@ -294,6 +312,21 @@ public class Books implements ProductInterface, BookInterface {
 
 	public String getAuthor() {
 		return author;
+	}
+}
+```
+
+```java
+public class Movie implements ProductInterface, MovieInterface {
+	private String movieName;
+	private String director;
+
+	public String getName() {
+		return movieName;
+	}
+
+	public String getDirector() {
+		return director;
 	}
 }
 ```
@@ -311,68 +344,65 @@ This principle states that
 So lets look at a common implementation of this problem.
 ```java
 public interface ShapeInterface {
-	Integer calculateArea(Map<Integer, Integer> calcValues);
+	Double calculateArea();
 }
 ```
 
 ```java
-public Rectangle implements ShapeInterface {
-	public Integer calculateArea(Map<Integer, Integer> calcValues) {
-		Integer area = 0;
-		//Logic
-		return area;
+public class Rectangle implements ShapeInterface {
+	private Double width;
+	private Double height;
+
+	public Rectangle(Double width, Double height) {
+		this.width = width;
+		this.height = height;
+	}
+
+	public Double calculateArea() {
+		return width * height;
 	}
 }
 ```
 
 ```java
-public class CalculateRectangleArea {
-	public Integer calculateTheAreaOfRectangle(Map<Integer, Integer> calcValues) {
-		public ShapeInterface shapeRectangle = new Rectangle();//oops this is now tightly coupled
-		return  shapeRectangle.calculateArea(calcValues);
+public class FloorPlan {
+	public Double calculateFloorArea() {
+		ShapeInterface room = new Rectangle(10, 12); //oops this is now tightly coupled
+		return room.calculateArea();
 	}
 }
 ```
 
-As you can see in the above example, our code is now tightly coupled with "hard-coded" references to each other.
+As you can see in the above example, `FloorPlan` is tightly coupled to `Rectangle`. It cannot work with any other shape, and it cannot be tested without one.
 
 Lets take a look at how we can remove this dependency.
 ```java
-public interface ShapeInterface {
-	Integer calculateArea(Map<Integer, Integer> calcValues);
-}
-```
+public class FloorPlan {
+	private List<ShapeInterface> rooms;
 
-```java
-public Rectangle implements ShapeInterface {
-	public Integer calculateArea(Map<Integer, Integer> calcValues) {
-		Integer area = 0;
-		//Logic
+	public FloorPlan(List<ShapeInterface> rooms) {
+		this.rooms = rooms;
+	}
+
+	public Double calculateFloorArea() {
+		Double area = 0;
+		for (ShapeInterface room : rooms) {
+			area += room.calculateArea();
+		}
+
 		return area;
 	}
 }
 ```
 
 ```java
-public Circle implements ShapeInterface {
-	public Integer calculateArea(Map<Integer, Integer> calcValues) {
-		Integer area = 0;
-		//Logic
-		return area;
-	}
-}
+FloorPlan floorPlan = new FloorPlan(new List<ShapeInterface>{
+	new Rectangle(10, 12),
+	new Rectangle(8, 9)
+});
+Double floorArea = floorPlan.calculateFloorArea();
 ```
 
-```java
-public class CalculateRectangleArea {
-	public Integer calculateTheAreaOfRectangle(String className, Map<Integer, Integer> calcValues) {
-		Type t = Type.forName(className);
-		Shape iClass = (Shapes)t.newInstance();
-		return iClass.calculateArea(calcValues);
-	}
-}
-```
-
-By using dependency injection we no longer rely on the class to define the specific type of *Shape*.
+By injecting the shapes, `FloorPlan` depends only on the `ShapeInterface` abstraction. Any shape that implements it works, including a test double. The [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) applies the same principle: a controller holds a DAO interface, and a test replaces it with a mock.
 
 [Back to Contents](#markdown-header-contents)

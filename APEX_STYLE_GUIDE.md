@@ -73,7 +73,7 @@ We write code for humans to read, so make sure humans can discuss it with our sp
 // BAD
 private DateTime lastChangeYMDHMS;
 // GOOD
-private DateTime lastChangeDateTime
+private DateTime lastChangeDateTime;
 ```
 
 ###### Use Searchable Names
@@ -151,14 +151,15 @@ public String AccountName {get; set;}
 * Accessors, mutators, and predicates should be named for their value and prefixed with _get_, _set_, and _is_ 
 * Test methods should follow this syntax: `methodUnderTest_testCondition_expectedResult`
 ```java
-// Method under test
-function createIndividualizedGreeting(name) {
+// Method under test, in the Greeter class
+public static String createIndividualizedGreeting(String name) {
 	return 'Hello, ' + name;
 }
 
 // Test method
-function createIndividualizedGreeting_givenName_shouldAppendNameToTheEndOfGreeting() {
-	String greeting = createIndividualizedGreeting('Gob');
+@isTest
+static void createIndividualizedGreeting_givenName_shouldAppendNameToTheEndOfGreeting() {
+	String greeting = Greeter.createIndividualizedGreeting('Gob');
 	System.assertEquals('Hello, Gob', greeting);
 }
 ```
@@ -182,7 +183,7 @@ function createIndividualizedGreeting_givenName_shouldAppendNameToTheEndOfGreeti
 * Leave a space before the opening brace
 * Closing braces should start on a new line indented to match the corresponding opening statement
 ```java
-function showWhereBracesGo() {
+public void showWhereBracesGo() {
 	// some stuff
 }
 ```
@@ -260,7 +261,7 @@ someReallyReallyLongName = someOtherLongVariableName * (someLongName +
 #### Formatting Methods
 Methods should start have no space between the method name and the params `(` and then one space between the ending `)` and the beginning `{`
 ```java
-function updateContact(Contact contactToUpdate) {
+public void updateContact(Contact contactToUpdate) {
 	...
 }
 ```
@@ -274,7 +275,7 @@ Split that deeper nested logic out into some well-named private methods.
 
 ```java
 // GOOD
-for(Integer i = 0; i < 20; i++) {
+for (Integer i = 0; i < 20; i++) {
 	if (i > 10) {
 		handleLargerThanTen();
 	} else {
@@ -283,7 +284,7 @@ for(Integer i = 0; i < 20; i++) {
 }
 
 // AVOID
-for(Integer i = 0; i < 20; i++) {
+for (Integer i = 0; i < 20; i++) {
 	if (i > 10) {
 		if (i % 2 == 0) {
 			// do something w/ even #s
@@ -294,7 +295,7 @@ for(Integer i = 0; i < 20; i++) {
 		if (i % 3 == 0) {
 			// do some stuff
 		} else {
-			do some other stuff
+			// do some other stuff
 		}
 	}
 }
@@ -366,11 +367,11 @@ Only create 1 trigger per object.
 Avoid writing logic directly in future methods.  Instead, write the logic in a separate method so that it can be used in both the future and immediate method.
 ```java
 @future
-public void updateAccountFuture(Id accountId) {
+public static void updateAccountFuture(Id accountId) {
 	updateAccount(accountId);
 }
 
-public void updateAccount(Id accountId) {
+public static void updateAccount(Id accountId) {
 	...
 }
 ```
@@ -393,12 +394,12 @@ if (userAccount.IsActive__c && !userAccount.IsInArrears__c && userAccount.Contac
 
 Instead, abstract that condition out into a method whose name says what that condition is checking
 ```java
-function isAccountCurrent(Account userAccount) {
+private Boolean isAccountCurrent(Account userAccount) {
 	return userAccount.IsActive__c && !userAccount.IsInArrears__c && userAccount.Contact.IsCurrent__c;
 }
 
-function doSomeStuff(Account userAccount) {
-	if (isAccountCurrent(userAccount) {
+public void doSomeStuff(Account userAccount) {
+	if (isAccountCurrent(userAccount)) {
 		// do some stuff
 	}
 }
@@ -413,8 +414,8 @@ Nested if statements should go into their own method.
 * The database access is a responsibility, so it belongs in its own class.  Your method should only have 1 responsibility, database access is not one of them
 ```java
 // Avoid
-function manipulateAccount(Id accountId) {
-	Account userAccount = [SELECT Id, ..., FROM Account WHERE Id = :accountId];
+public void manipulateAccount(Id accountId) {
+	Account userAccount = [SELECT Id, Name FROM Account WHERE Id = :accountId];
 
 	// some if statements and a little object manipulation stuff
 

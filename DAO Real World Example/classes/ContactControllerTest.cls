@@ -19,7 +19,7 @@ private class ContactControllerTest {
 		Contact contact2 = buildMockContact(testAccountId, 'Jane', 'Smith');
 
 		ContactDataAccessorMock contactMock = new ContactDataAccessorMock();
-		contactMock.insertRecords(new List<Contact>{ contact1, contact2 });
+		contactMock.addExistingRecords(new List<Contact>{ contact1, contact2 });
 		ContactController.contactAccessor = contactMock;
 
 		Test.startTest();

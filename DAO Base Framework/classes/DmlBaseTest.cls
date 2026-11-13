@@ -6,7 +6,6 @@ private class DmlBaseTest {
 	private static Account createTestAccount() {
 		Account testAccount = new Account();
 		testAccount.Name = 'Test Account';
-		testAccount.Status__c = Account.Status__c.getDescribe().getPicklistValues()[0].getLabel();
 
 		return testAccount;
 	}
