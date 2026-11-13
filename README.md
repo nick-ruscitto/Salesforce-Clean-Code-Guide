@@ -6,6 +6,12 @@ A comprehensive guide to writing clean, maintainable, and testable Salesforce co
 
 This guide provides coding standards, architectural patterns, and working examples for Salesforce development. It covers Apex, Lightning Web Components, Aura Components, and testing strategies with a focus on maintainability, readability, and adherence to SOLID principles.
 
+## Written for People and AI Agents
+
+Code is read far more often than it is written, and its readers include AI agents as well as developers. An agent chooses an action from its name and description, understands a field from its name and help text, and acts on what an output says it contains. It cannot ask what was meant.
+
+Clean design is how intent reaches both kinds of reader. Names carry most of it: if a name requires a comment to explain what it does, it is not a clean name.
+
 ## Contents
 
 ### Style Guides
@@ -51,9 +57,9 @@ This guide provides coding standards, architectural patterns, and working exampl
 - Descriptions and help text
 
 **[AGENTFORCE_GUIDE.md](./AGENTFORCE_GUIDE.md)**
-- Invocable actions for agents
-- Calling prompt templates from Apex
-- Validating model output
+- Designing and naming for AI agents
+- Invocable actions and action patterns
+- Calling prompt templates from Apex and validating their output
 
 **[SOLID_GUIDE.md](./SOLID_GUIDE.md)**
 - Single Responsibility Principle (SRP)

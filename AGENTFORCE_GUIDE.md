@@ -1,9 +1,28 @@
 # Agentforce Guide
 
 ## Contents
-1. [Invocable Actions](#invocable-actions)
-2. [Prompt Templates](#prompt-templates)
-3. [Metadata](#metadata)
+1. [Designing for Agents](#designing-for-agents)
+2. [Naming for Agents](#naming-for-agents)
+3. [Invocable Actions](#invocable-actions)
+4. [Action Patterns](#action-patterns)
+5. [Prompt Templates](#prompt-templates)
+6. [Metadata](#metadata)
+
+## Designing for Agents
+An agent reads an org the way a new developer does, without being able to ask what anything means. It chooses an action from the action's label and description, understands a field from its name and help text, and acts on what an output says it contains. Every rule in this guide's other sections applies, and the cost of breaking one is higher: a misleading name confuses a developer, but an agent acts on it.
+
+[Back to Contents](#contents)
+
+## Naming for Agents
+The [naming rules](./APEX_STYLE_GUIDE.md#naming) apply to everything an agent reads.
+
+* **Reveal intent.** An action's label is a verb phrase that says what it does: "Summarize Case", not "Case Helper". Every input and output is named for exactly what it holds
+* **Avoid disinformation.** An output is named and described for what it actually contains. An output called "Redlined Document" must not hold a clean copy
+* **Make meaningful distinctions.** An agent cannot choose between two actions named "Get Case Details" and "Get Case Info". Merge them, or name each for what sets it apart
+* **Pick one word per concept.** Use the same word for a concept in field names, action descriptions, and agent instructions. If the field is `Disposition__c`, the instructions say "disposition", not "decision" or "outcome"
+* **Use positive Booleans.** An input named `includeClosedCases` is clearer than `excludeOpenCases`
+
+[Back to Contents](#contents)
 
 ## Invocable Actions
 An agent works through actions. An Apex action is a class with an `@InvocableMethod`.
@@ -13,7 +32,6 @@ An agent works through actions. An Apex action is a class with an `@InvocableMet
 * Name the class for what the action does, ending in `Action`: `CaseSummaryAction`
 * The method takes a `List<Request>` and returns a `List<Response>`, with one response for each request, in the same order
 * `Request` and `Response` are inner classes, placed at the bottom of the class
-* The action translates requests into calls on the class that holds the logic, and the results back into responses. It holds no business logic itself
 
 #### Labels and descriptions
 The agent decides when to use an action, and what to pass it, from its label and descriptions.
@@ -82,6 +100,95 @@ public with sharing class CaseSummaryAction {
 
 [Back to Contents](#contents)
 
+## Action Patterns
+
+#### Keep actions thin
+An action translates requests into calls on the classes that already hold the logic, and turns the results into text the agent can read. It holds no business logic itself, so a screen and an agent share one implementation.
+
+#### Resolve context from the record Id
+An agent passes the Id of the record the user is viewing, which may be the record the action needs or one related to it. Resolve it in one value object, named for what it identifies, so every action does not repeat the same lookups.
+
+```java
+public with sharing class ProjectSubject {
+
+	public static ProjectTaskDAO taskAccessor = new ProjectTaskDataAccessor();
+
+	public final Id projectId;
+
+	private ProjectSubject(Id projectId) {
+		this.projectId = projectId;
+	}
+
+	public static ProjectSubject forRecordId(Id recordId) {
+		return new ProjectSubject(projectIdFrom(recordId));
+	}
+
+	private static Id projectIdFrom(Id recordId) {
+		if (recordId.getSObjectType() == Project__c.SObjectType) {
+			return recordId;
+		}
+
+		return taskAccessor.getTaskFromId(recordId).Project__c;
+	}
+}
+```
+
+#### Resolve the records the user names
+When a user names a record in words, match the name to records in steps, and report what was found rather than guessing:
+
+1. Look for exact matches, ignoring case
+2. With no exact match, look for records whose name contains the words, only when the words are long enough to be meaningful
+3. One match: act on it. No match: say so and list the names that exist. Several matches: list them and ask which one
+
+```java
+private static final Integer MIN_LOOSE_MATCH_LENGTH = 3;
+
+private static List<ProjectTask__c> matchesFor(String spokenName, List<ProjectTask__c> tasks) {
+	List<ProjectTask__c> exactMatches = new List<ProjectTask__c>();
+	List<ProjectTask__c> looseMatches = new List<ProjectTask__c>();
+
+	for (ProjectTask__c task : tasks) {
+		if (task.Name.equalsIgnoreCase(spokenName)) {
+			exactMatches.add(task);
+		} else if (isLooseMatch(task.Name, spokenName)) {
+			looseMatches.add(task);
+		}
+	}
+
+	return exactMatches.isEmpty() ? looseMatches : exactMatches;
+}
+
+private static Boolean isLooseMatch(String taskName, String spokenName) {
+	return spokenName.length() >= MIN_LOOSE_MATCH_LENGTH
+		&& taskName.containsIgnoreCase(spokenName);
+}
+```
+
+#### Refresh open pages after a change
+When an action changes data, the components on the user's page do not know. Publish a platform event after the change, carrying the Id of the changed record. Components on the page subscribe with `lightning/empApi`, ignore events for other records, and refresh themselves.
+
+```java
+public with sharing class ProjectChangeEventPublisher {
+
+	public static void publishChange(Id projectId) {
+		EventBus.publish(new ProjectChangeEvent__e(EntityId__c = projectId));
+	}
+}
+```
+
+```javascript
+subscribe(CHANNEL, -1, (message) => {
+	if (message.data.payload.EntityId__c === this.recordId) {
+		refreshApex(this.wiredProject);
+	}
+});
+```
+
+#### Confirm before outside effects
+An action that sends a message, deletes data, or reaches a system outside Salesforce requires the user's confirmation before it runs. Turn on the action's user confirmation setting, and have the agent show what will be sent or changed.
+
+[Back to Contents](#contents)
+
 ## Prompt Templates
 
 #### Invoke templates through an interface
@@ -123,6 +230,16 @@ public with sharing class PromptTemplateInvoker implements PromptTemplateInvoker
 		return wrappedInputs;
 	}
 }
+```
+
+#### Use text inputs for templates an agent calls
+Give a template that an agent calls text inputs, and have the agent fill them from the outputs of earlier actions. The agent then chains the actions: one action gathers the facts, and the template writes from them.
+
+#### State what to do when an input is empty
+A template's instructions say what to return when a required input is empty, so it never writes something from nothing.
+
+```
+If {!$Input:Findings} is empty, reply only with: "There are no findings to write about."
 ```
 
 #### Exchange structured data as JSON

@@ -25,6 +25,8 @@
 6. [Security](#security)
 
 ## Naming
+Names are the primary way code communicates intent.  If a name requires a comment to explain what it does, it is not a clean name.
+
 Appropriate naming helps us glean useful information quickly.  Conventions facilitate self-documenting code that improves readability and consistency.
 
 Look at the example below and try to determine the purpose of the method.
@@ -60,6 +62,7 @@ The method name of the second example not only allows us to quickly determine th
 #### General Naming Rules
 ###### Use Intention-Revealing Names
 
+* A name answers why it exists, what it does, and how it is used: `elapsedTimeInDays`, not `d` or `theList`
 * Naming is hard, but taking the time to choose a name that describes exactly what you are naming saves time for you and all others to come in the future
 * The name should speak for itself. If the name requires a comment to further explain the intent, the name needs to be revised
 * Do not be afraid of renaming if you think of a better, more descriptive one in the future (modern editors make this renaming a trivial task)
@@ -73,23 +76,25 @@ A name must not suggest something the code does not do.
 
 ###### Make Meaningful Distinctions
 
-Distinguish names so that the reader knows what the differences are.  For example, the class names `PersonInfo` and `PersonData` have different names, but the names don't _mean_ anything different 
+Distinguish names so that the reader knows what the differences are.  For example, the class names `PersonInfo` and `PersonData` have different names, but the names don't _mean_ anything different.  Do not create noisy variations just to get code to compile, such as `Customer` and `CustomerObject`.
 
 ###### Use Pronounceable Names
 We write code for humans to read, so make sure humans can discuss it with our spoken language.
 ```java
 // BAD
-private DateTime lastChangeYMDHMS;
+private DateTime genymdhms;
 // GOOD
-private DateTime lastChangeDateTime;
+private DateTime generationTimestamp;
 ```
 
 ###### Use Searchable Names
 * Names should be easy to locate across a body of text.
-* The length of the name should correspond to the size of its scope.
+* Replace magic numbers with named constants: `MAX_RETRY_COUNT`, not `3`.
+* The length of a variable's name should correspond to the size of its scope. Single letters such as `i` are acceptable only for counters in tiny loops; a variable used across a class needs a long, descriptive name.
+* The rule is inverted for methods. A widely used, high-level method has a short name because it is called everywhere, such as `save`. A small private helper can have a longer, more descriptive name, such as `removeContactsWithoutEmail`.
 
 ###### Avoid Encodings
-Encoding type or scope information into names only adds to the burden of deciphering intent.  They are a mental burden, rarely pronounceable, and easy to mistype
+Encoding type or scope information into names only adds to the burden of deciphering intent.  They are a mental burden, rarely pronounceable, and easy to mistype.  Do not use type prefixes or Hungarian notation: `name`, not `nameString` or `strName`.
 
 ###### Don't Be Cute
 Don't try to be clever or funny with your names.  The humor will disappear very quickly when somebody is trying to quickly decipher your code in order to fix an issue.
@@ -108,7 +113,7 @@ Pick and use one word for an abstract concept and stick with it.  For example, w
 	* They should start with a capitalized letter
 	* The first letter of all subsequent words should be capitalized
 * Should have noun or noun phrase names like User, Customer, AddressParser
-* DO NOT use words like Manager, Processor, Data or Info, they do not add anything to describing the purpose of the class
+* DO NOT use words like Manager, Processor, Data or Info, they do not add anything to describing the purpose of the class, and often hint that the class is doing too many things
 * Avoid using design pattern names like Wrapper. A wrapper class could be called SelectableAccount instead of AccountWrapper
 	* The exceptions are the suffixes this guide defines below, and the `DataAccessor`, `DAO`, and `TriggerFacade` names of the [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) and the trigger facade
 * Only use alpha characters
@@ -133,6 +138,7 @@ Pick and use one word for an abstract concept and stick with it.  For example, w
 * Common acronyms can be used (ssn, dob, DB)
 * Variable types in the name are not necessary (don't do `stringAlertMessage`, or `intErrorCount`)
 * Booleans should be named to let you know that it is a boolean (`hasErrors`, `isFull`, etc...)
+* Booleans use positive phrasing: `isEnabled`, not `isDisabled`
 * The name should be long enough to describe its intent
 	* The only exception to this is a variable in a very small scope, so in a small for loop for example
 * Distinguish between single objects and collections (`selectedAccount` vs `selectedAccounts`)
@@ -152,7 +158,7 @@ public String AccountName {get; set;}
 * Method names should be in camel case
 	* They should start with a lower-case letter
 	* The first letter of all subsequent words should be capitalized
-* Method names should have a verb and follow one of the patterns below
+* Method names are verbs or verb phrases, such as `postPayment`, `deletePage`, or `save`, and follow one of the patterns below
 	* verb-Noun or verb-Noun-How (getAccountsFromId, getUsers)
 	* Verb-adj-noun (getSelectedUsers, hasSelectedItems)
 	* Verb-adj (isDeleted) Boolean returns always use present tense states of being: is, has, are, etc
