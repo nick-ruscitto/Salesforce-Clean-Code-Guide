@@ -48,7 +48,7 @@ private class ContactFormControllerTest {
 		Test.stopTest();
 
 		Assert.isTrue(exceptionThrown, 'Should throw AuraHandledException');
-		Assert.areEqual('Last Name is required', exceptionMessage, 'Should have correct error message');
+		Assert.areEqual('Enter a Last Name to save this contact.', exceptionMessage, 'Should have correct error message');
 
 		List<Contact> insertedContacts = (List<Contact>) contactMock.getRecords();
 		Assert.areEqual(0, insertedContacts.size(), 'Should not insert any contacts');
@@ -72,7 +72,7 @@ private class ContactFormControllerTest {
 		Test.stopTest();
 
 		Assert.isTrue(exceptionThrown, 'Should throw AuraHandledException');
-		Assert.areEqual('Account is required', exceptionMessage, 'Should have correct error message');
+		Assert.areEqual('Choose an account for this contact.', exceptionMessage, 'Should have correct error message');
 
 		List<Contact> insertedContacts = (List<Contact>) contactMock.getRecords();
 		Assert.areEqual(0, insertedContacts.size(), 'Should not insert any contacts');

@@ -7,6 +7,7 @@
 1. [Basic Rules](#basic-rules)
 1. [Component Properties](#component-properties)
 1. [Component Composition](#component-composition)
+1. [Calling Apex](#calling-apex)
 1. [Events](#events)
 1. [Component Styles](#component-styles)
 1. [Testing](#testing)
@@ -61,7 +62,22 @@ Additionally, considering the nature of Lightning Web Components,
 </template>
 ```
 
--   **Do** refresh data loaded with `@wire` using `refreshApex` on the stored wire result, and refresh standard components on the page by dispatching `RefreshEvent` from `lightning/refresh`
+-   **Do** refresh standard components on the page by dispatching `RefreshEvent` from `lightning/refresh`
+-   **Do** reach a child component with `lwc:ref` rather than `this.template.querySelector`
+
+```html
+<c-account-contact-list lwc:ref="contactList"></c-account-contact-list>
+```
+
+```javascript
+refreshContactList() {
+	this.refs.contactList.refreshContacts();
+}
+```
+
+-   **Do** confirm a completed action with `ShowToastEvent` from `lightning/platformShowToastEvent`
+-   **Do** link to records and pages with `NavigationMixin` from `lightning/navigation`, not hard-coded URLs
+-   **Do** build dialogs by extending `LightningModal` from `lightning/modal`
 
 ## Component Properties
 
@@ -260,6 +276,62 @@ export function removeByIndex(array, index) {
 1. Absolute imports with paths (e.g. `'@salesforce/wire-service-jest-util'`)
 1. "Relative" imports (e.g. `'c/myModule'`)
 
+## Calling Apex
+
+-   **Do** call Apex imperatively with `async` and `await`, rather than with `@wire`
+
+> Why? The component decides when data loads and reloads, errors are handled with `try` and `catch` like any other code, and refreshing is calling the same method again.
+
+-   **Do** load data in `connectedCallback`, or in the setter of the `@api` property the data depends on
+-   **Do** refresh by calling the load method again
+-   **Do** turn Apex errors into messages in one shared module
+-   **Do** mark an Apex method `cacheable=true` only when the component can show stale data. An imperative call to a cacheable method can return the cached result, so a method whose results must reflect a change the user just made is not cacheable
+
+```javascript
+// lwc/apexErrors/apexErrors.js
+
+const DEFAULT_MESSAGE = 'Something went wrong. Try again, and contact support if it keeps happening.';
+
+export function messageFrom(error) {
+	if (Array.isArray(error?.body)) {
+		return error.body.map((entry) => entry.message).join(', ');
+	}
+
+	return error?.body?.message || error?.message || DEFAULT_MESSAGE;
+}
+```
+
+```javascript
+import { LightningElement, api } from 'lwc';
+import getContactsByAccountId from '@salesforce/apex/ContactController.getContactsByAccountId';
+import { messageFrom } from 'c/apexErrors';
+
+export default class AccountContactList extends LightningElement {
+	@api accountId;
+	contacts = [];
+	errorMessage;
+
+	connectedCallback() {
+		this.loadContacts();
+	}
+
+	@api
+	refreshContacts() {
+		return this.loadContacts();
+	}
+
+	async loadContacts() {
+		try {
+			this.contacts = await getContactsByAccountId({ accountId: this.accountId });
+			this.errorMessage = undefined;
+		} catch (error) {
+			this.contacts = [];
+			this.errorMessage = messageFrom(error);
+		}
+	}
+}
+```
+
 ## Events
 
 -   **Avoid** mutating event data
@@ -358,6 +430,7 @@ describe('myComponent', () => {
     >
     > -   Child components
     > -   Callouts
+    > -   Imperative Apex methods
     > -   `@wire` methods
     > -   Code from other modules that may perform callouts or some other expensive behavior
 

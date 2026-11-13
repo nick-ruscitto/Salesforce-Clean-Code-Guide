@@ -1,5 +1,7 @@
 import { LightningElement, api } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import createContact from '@salesforce/apex/ContactFormController.createContact';
+import { messageFrom } from 'c/apexErrors';
 
 export default class NewContactForm extends LightningElement {
 	@api accountId;
@@ -7,69 +9,57 @@ export default class NewContactForm extends LightningElement {
 	lastName = '';
 	email = '';
 	isSaving = false;
-	successMessage = '';
 	errorMessage = '';
 
 	updateFirstName(event) {
 		this.firstName = event.target.value;
-		this.clearMessages();
+		this.errorMessage = '';
 	}
 
 	updateLastName(event) {
 		this.lastName = event.target.value;
-		this.clearMessages();
+		this.errorMessage = '';
 	}
 
 	updateEmail(event) {
 		this.email = event.target.value;
-		this.clearMessages();
-	}
-
-	clearMessages() {
-		this.successMessage = '';
 		this.errorMessage = '';
 	}
 
-	saveContact() {
+	async saveContact() {
 		if (!this.lastName) {
-			this.errorMessage = 'Last Name is required';
-			return;
-		}
-		if (!this.accountId) {
-			this.errorMessage = 'Account ID is required';
+			this.errorMessage = 'Enter a Last Name to save this contact.';
 			return;
 		}
 
 		this.isSaving = true;
-		this.clearMessages();
+		this.errorMessage = '';
 
-		createContact({
-			newContact: {
-				sobjectType: 'Contact',
-				FirstName: this.firstName,
-				LastName: this.lastName,
-				Email: this.email,
-				AccountId: this.accountId
-			}
-		})
-			.then((contactId) => {
-				this.successMessage = `Contact created successfully! ID: ${contactId}`;
-				this.resetForm();
-				this.dispatchEvent(new CustomEvent('contactsaved', {
-					detail: { contactId }
-				}));
-			})
-			.catch((error) => {
-				this.errorMessage = error.body?.message || 'An error occurred while creating the contact';
-			})
-			.finally(() => {
-				this.isSaving = false;
-			});
+		try {
+			const contactId = await createContact({ newContact: this.buildContact() });
+			this.resetForm();
+			this.dispatchEvent(new ShowToastEvent({ title: 'Contact created', variant: 'success' }));
+			this.dispatchEvent(new CustomEvent('contactsaved', { detail: { contactId } }));
+		} catch (error) {
+			this.errorMessage = messageFrom(error);
+		} finally {
+			this.isSaving = false;
+		}
 	}
 
 	cancelNewContact() {
 		this.resetForm();
 		this.dispatchEvent(new CustomEvent('cancel'));
+	}
+
+	buildContact() {
+		return {
+			sobjectType: 'Contact',
+			FirstName: this.firstName,
+			LastName: this.lastName,
+			Email: this.email,
+			AccountId: this.accountId
+		};
 	}
 
 	resetForm() {

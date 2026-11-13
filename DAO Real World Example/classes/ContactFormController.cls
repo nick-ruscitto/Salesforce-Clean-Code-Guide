@@ -5,11 +5,11 @@ public with sharing class ContactFormController {
 	@AuraEnabled
 	public static Id createContact(Contact newContact) {
 		if (String.isBlank(newContact.LastName)) {
-			throw UserFacingError.withMessage('Last Name is required');
+			throw UserFacingError.withMessage('Enter a Last Name to save this contact.');
 		}
 
 		if (newContact.AccountId == null) {
-			throw UserFacingError.withMessage('Account is required');
+			throw UserFacingError.withMessage('Choose an account for this contact.');
 		}
 
 		contactAccessor.insertRecords(new List<Contact>{ newContact });

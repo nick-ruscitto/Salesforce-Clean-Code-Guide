@@ -83,7 +83,7 @@ This example follows SOLID principles with separated concerns:
 
 **accountContainer** (Container/Orchestrator)
 - Placed on Account record pages
-- Uses `@wire` to load Account from `AccountController`
+- Loads the Account imperatively from `AccountController` when connected
 - Passes data down to child components
 - Coordinates communication between children
 
@@ -92,7 +92,7 @@ This example follows SOLID principles with separated concerns:
 - Receives Account data via `@api` from parent
 
 **accountContactList** (Data Display + Action)
-- Uses `@wire` to load Contacts from `ContactController`
+- Loads Contacts imperatively from `ContactController` when connected, and reloads them when `refreshContacts()` is called
 - Displays contacts as cards
 - "New Contact" button to toggle form
 - Handles contact creation events
@@ -136,7 +136,7 @@ The Data Access Object pattern separates database operations into dedicated clas
 public with sharing class ContactController {
     public static ContactDAO contactAccessor = new ContactDataAccessor();
 
-    @AuraEnabled(cacheable=true)
+    @AuraEnabled
     public static List<Contact> getContactsByAccountId(Id accountId) {
         return contactAccessor.getContactsFromAccountId(accountId);
     }
@@ -208,7 +208,14 @@ Generates fake Salesforce IDs for relationships without database queries.
 **Parent to Child (Property Binding):**
 ```html
 <c-account-details account={account}></c-account-details>
-<c-account-contact-list account-id={recordId}></c-account-contact-list>
+<c-account-contact-list lwc:ref="contactList" account-id={recordId}></c-account-contact-list>
+```
+
+**Parent to Child (Public Method through `lwc:ref`):**
+```javascript
+refreshContactList() {
+    this.refs.contactList.refreshContacts();
+}
 ```
 
 **Child to Parent (Custom Events):**

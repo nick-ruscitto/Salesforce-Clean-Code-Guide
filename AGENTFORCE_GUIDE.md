@@ -179,7 +179,7 @@ public with sharing class ProjectChangeEventPublisher {
 ```javascript
 subscribe(CHANNEL, -1, (message) => {
 	if (message.data.payload.EntityId__c === this.recordId) {
-		refreshApex(this.wiredProject);
+		this.loadProject();
 	}
 });
 ```

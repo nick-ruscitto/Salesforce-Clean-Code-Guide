@@ -15,6 +15,7 @@
 				<!-- Contact List Section -->
 				<div class="slds-m-top_large">
 					<c-account-contact-list
+						lwc:ref="contactList"
 						account-id={recordId}
 						oncontactcreated={refreshContactList}
 					></c-account-contact-list>

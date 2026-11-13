@@ -1,26 +1,27 @@
-import { LightningElement, api, wire } from 'lwc';
+import { LightningElement, api } from 'lwc';
 import getAccountById from '@salesforce/apex/AccountController.getAccountById';
+import { messageFrom } from 'c/apexErrors';
 
 export default class AccountContainer extends LightningElement {
 	@api recordId;
 	account;
 	errorMessage;
 
-	@wire(getAccountById, { accountId: '$recordId' })
-	wiredAccount({ error, data }) {
-		if (data) {
-			this.account = data;
-			this.errorMessage = undefined;
-		} else if (error) {
-			this.errorMessage = error.body?.message || 'An error occurred while loading the account';
-			this.account = undefined;
-		}
+	connectedCallback() {
+		this.loadAccount();
 	}
 
 	refreshContactList() {
-		const contactList = this.template.querySelector('c-account-contact-list');
-		if (contactList) {
-			contactList.refreshContacts();
+		this.refs.contactList.refreshContacts();
+	}
+
+	async loadAccount() {
+		try {
+			this.account = await getAccountById({ accountId: this.recordId });
+			this.errorMessage = undefined;
+		} catch (error) {
+			this.account = undefined;
+			this.errorMessage = messageFrom(error);
 		}
 	}
 }

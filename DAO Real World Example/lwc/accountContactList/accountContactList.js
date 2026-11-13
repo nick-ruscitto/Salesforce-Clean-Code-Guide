@@ -1,34 +1,28 @@
-import { LightningElement, api, wire } from 'lwc';
-import { refreshApex } from '@salesforce/apex';
+import { LightningElement, api } from 'lwc';
 import getContactsByAccountId from '@salesforce/apex/ContactController.getContactsByAccountId';
+import { messageFrom } from 'c/apexErrors';
 
 export default class AccountContactList extends LightningElement {
 	@api accountId;
 	contacts = [];
 	errorMessage;
 	showNewContactForm = false;
-	wiredContactsResult;
 
-	@wire(getContactsByAccountId, { accountId: '$accountId' })
-	wiredContacts(result) {
-		this.wiredContactsResult = result;
-		const { error, data } = result;
+	connectedCallback() {
+		this.loadContacts();
+	}
 
-		if (data) {
-			this.contacts = data;
-			this.errorMessage = undefined;
-		} else if (error) {
-			this.errorMessage = error.body?.message || 'An error occurred while loading contacts';
-			this.contacts = [];
-		}
+	@api
+	refreshContacts() {
+		return this.loadContacts();
 	}
 
 	get hasContacts() {
-		return this.contacts && this.contacts.length > 0;
+		return this.contacts.length > 0;
 	}
 
 	get contactCount() {
-		return this.contacts ? this.contacts.length : 0;
+		return this.contacts.length;
 	}
 
 	openNewContactForm() {
@@ -37,7 +31,6 @@ export default class AccountContactList extends LightningElement {
 
 	closeFormAndAnnounceNewContact() {
 		this.showNewContactForm = false;
-		this.refreshContacts();
 		this.dispatchEvent(new CustomEvent('contactcreated'));
 	}
 
@@ -45,8 +38,13 @@ export default class AccountContactList extends LightningElement {
 		this.showNewContactForm = false;
 	}
 
-	@api
-	refreshContacts() {
-		return refreshApex(this.wiredContactsResult);
+	async loadContacts() {
+		try {
+			this.contacts = await getContactsByAccountId({ accountId: this.accountId });
+			this.errorMessage = undefined;
+		} catch (error) {
+			this.contacts = [];
+			this.errorMessage = messageFrom(error);
+		}
 	}
 }
