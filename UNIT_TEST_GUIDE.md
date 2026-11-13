@@ -180,6 +180,73 @@ private static Account buildMockAccount(Id ownerId) {
 
 Much like `@testSetup` methods, the `buildMockAccount()` method creates the mock record so that a database interaction is not needed. This test method now only checks to make sure the method it is testing changes the owner of the Account record. The test methods for the methods in Data Accessor classes should actually run DML and queries across the associated objects to account for backend interactions. This example also shows both a positive and negative test case. Unit tests should cover the full spectrum of possible outcomes of the code, not just what ideally should happen.
 
+## Unit Tests and Integration Tests
+
+Code meets things it does not control at its boundaries. In Salesforce, the largest of these is the platform itself: the database, triggers, validation rules, flows, sharing, and governor limits. Keep each boundary thin, wrap it in an interface you own, and test the two sides differently.
+
+A **unit test** checks one unit of logic in isolation. Its dependencies are replaced with mocks, so it is fast and fails only when that unit is wrong.
+
+An **integration test** checks that code works with the real thing on the other side of a boundary. It uses real records and real platform behavior, so it is slower and can fail because of changes outside the code under test.
+
+#### Test logic with unit tests
+Use a unit test for anything whose behavior the code decides:
+* Branches, calculations, and decisions
+* Edge cases, such as `null` values and empty lists
+* Error paths
+* Turning one shape of data into another
+
+#### Test boundaries with integration tests
+Use an integration test where the code depends on something only the platform does:
+* **Queries:** that SOQL returns the right records and fields. A mock cannot show that a filter is wrong
+* **DML and what it starts:** triggers, validation rules, record-triggered flows, roll-up summaries, required fields, and duplicate rules
+* **Sharing and permissions:** that a user can or cannot see or change a record, using `System.runAs` with real users
+* **Bulk behavior and governor limits:** that a trigger handles 200 or more records in one transaction. Mocks hide every limit
+* **Asynchronous work:** that Queueables, finalizers, and platform events run after `Test.stopTest()`
+* **Wiring:** that the parts of a feature connect to each other at least once
+
+```java
+@isTest
+static void contactTrigger_givenBulkInsert_everyEmailShouldBeLowerCase() {
+	List<Contact> newContacts = new List<Contact>();
+	for (Integer index = 0; index < 200; index++) {
+		newContacts.add(new Contact(
+			LastName = 'Contact ' + index,
+			Email = 'CONTACT' + index + '@EXAMPLE.COM'
+		));
+	}
+
+	Test.startTest();
+		insert newContacts;
+	Test.stopTest();
+
+	List<Contact> savedContacts = [
+		SELECT Id
+			, Email
+		FROM Contact
+		WHERE Id IN :newContacts
+	];
+	for (Contact savedContact : savedContacts) {
+		Assert.areEqual(
+			savedContact.Email.toLowerCase(),
+			savedContact.Email,
+			'Email should be stored in lower case'
+		);
+	}
+}
+```
+
+#### Rules
+* **A feature has both.** Many unit tests cover its logic, and a few integration tests cover the points where it touches the platform
+* **Mock only what you own.** Wrap a platform feature in your own interface and mock the interface. Do not imitate the platform's behavior inside a mock and trust it
+* **Test one concept per test.** A test that checks a query and a calculation has two reasons to fail
+* **Do not test the same thing twice.** Integration tests prove the boundary. Unit tests assume it holds and cover the logic
+* **Keep integration tests few and focused.** One for each boundary, plus the bulk and permission cases, is usually enough
+* **Know which kind a test is.** If adding a validation rule could break it, it is an integration test. That is correct when the interaction is what it tests, and a brittle test when it is not
+
+Every Apex test runs inside an org, so even a unit test is not fully isolated; the difference is whether it depends on real records and platform behavior. Both kinds count toward the required code coverage, and coverage does not show which kind a codebase has.
+
+The [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) applies these rules: the data accessors are the boundary and get integration tests, and the code above them uses mocks and gets unit tests.
+
 **Testing platform features:**
 
 **Asynchronous Apex:** Enqueue the job between `Test.startTest()` and `Test.stopTest()`. Queued jobs, future methods, and their finalizers run when `Test.stopTest()` is called, so assert after it.
@@ -240,7 +307,7 @@ public class PromptTemplateInvokerMock implements PromptTemplateInvokerInterface
 - Test methods should test one and only one unit of code
 - Tests should handle negative as well as positive cases if applicable
 - Mocking should be used to decouple tests from databases
-- Database interaction should still happen with unit tests related to DAs so that full functionality is still covered
+- Test logic with unit tests and boundaries with integration tests
 - Write tests along with the code they test, and deploy them together
 
 
