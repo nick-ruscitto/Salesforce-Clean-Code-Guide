@@ -8,7 +8,7 @@ public inherited sharing class AccountDataAccessorMock extends DmlBaseMock imple
 		this.mockDatabaseAccounts = (List<Account>)super.records;
 	}
 
-	public Account getAccountFromId(Id accountId) {
+	public Account getAccountById(Id accountId) {
 		for (Account a : mockDatabaseAccounts) {
 			if (a.Id == accountId) {
 				return a;
@@ -18,7 +18,7 @@ public inherited sharing class AccountDataAccessorMock extends DmlBaseMock imple
 		throw new QueryException('Account not found');
 	}
 
-	public List<Account> getAccountsFromIdSet(Set<Id> accountIds) {
+	public List<Account> getAccountsByIds(Set<Id> accountIds) {
 		List<Account> accountsToReturn = new List<Account>();
 
 		for (Account a : mockDatabaseAccounts) {

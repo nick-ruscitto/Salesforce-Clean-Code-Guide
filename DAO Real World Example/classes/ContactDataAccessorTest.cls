@@ -28,7 +28,7 @@ private class ContactDataAccessorTest {
 	}
 
 	@isTest
-	static void getContactFromId_givenValidId_shouldReturnContact() {
+	static void getContactById_givenValidId_shouldReturnContact() {
 		Contact testContact = [
 			SELECT Id
 			FROM Contact
@@ -39,7 +39,7 @@ private class ContactDataAccessorTest {
 		ContactDataAccessor dao = new ContactDataAccessor();
 
 		Test.startTest();
-			Contact result = dao.getContactFromId(testContact.Id);
+			Contact result = dao.getContactById(testContact.Id);
 		Test.stopTest();
 
 		Assert.areEqual(testContact.Id, result.Id, 'Should return contact with matching Id');
@@ -49,7 +49,7 @@ private class ContactDataAccessorTest {
 	}
 
 	@isTest
-	static void getContactsFromIdSet_givenMultipleIds_shouldReturnContacts() {
+	static void getContactsByIds_givenMultipleIds_shouldReturnContacts() {
 		List<Contact> testContacts = [
 			SELECT Id
 			FROM Contact
@@ -63,7 +63,7 @@ private class ContactDataAccessorTest {
 		ContactDataAccessor dao = new ContactDataAccessor();
 
 		Test.startTest();
-			List<Contact> results = dao.getContactsFromIdSet(contactIds);
+			List<Contact> results = dao.getContactsByIds(contactIds);
 		Test.stopTest();
 
 		Assert.areEqual(2, results.size(), 'Should return 2 contacts');
@@ -72,7 +72,7 @@ private class ContactDataAccessorTest {
 	}
 
 	@isTest
-	static void getContactsFromAccountId_givenAccountId_shouldReturnContacts() {
+	static void getContactsByAccountId_givenAccountId_shouldReturnContacts() {
 		Account testAccount = [
 			SELECT Id
 			FROM Account
@@ -82,7 +82,7 @@ private class ContactDataAccessorTest {
 		ContactDataAccessor dao = new ContactDataAccessor();
 
 		Test.startTest();
-			List<Contact> results = dao.getContactsFromAccountId(testAccount.Id);
+			List<Contact> results = dao.getContactsByAccountId(testAccount.Id);
 		Test.stopTest();
 
 		Assert.areEqual(2, results.size(), 'Should return 2 contacts for the account');

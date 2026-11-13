@@ -1,6 +1,6 @@
 public inherited sharing class ContactDataAccessor extends DmlBase implements ContactDAO {
 
-	public Contact getContactFromId(Id contactId) {
+	public Contact getContactById(Id contactId) {
 		Contact c = [
 			SELECT Id
 				, FirstName
@@ -15,7 +15,7 @@ public inherited sharing class ContactDataAccessor extends DmlBase implements Co
 		return c;
 	}
 
-	public List<Contact> getContactsFromIdSet(Set<Id> contactIds) {
+	public List<Contact> getContactsByIds(Set<Id> contactIds) {
 		return [
 			SELECT Id
 				, FirstName
@@ -27,7 +27,7 @@ public inherited sharing class ContactDataAccessor extends DmlBase implements Co
 		];
 	}
 
-	public List<Contact> getContactsFromAccountId(Id accountId) {
+	public List<Contact> getContactsByAccountId(Id accountId) {
 		return [
 			SELECT Id
 				, FirstName

@@ -112,15 +112,15 @@ Controller methods should be kept skinny.  The only thing that a controller meth
 Here is an example of a controller w/ too much in it
 ```javascript
 deactivateOldAccounts: function(component, event, helper) {
-	var accountsToDeactivate = component.get("oldAccounts");
+	var accountsToDeactivate = component.get("v.oldAccounts");
 
-	for (let i = 0; i < accountsToDeactiveate.length; i++) {
+	for (let i = 0; i < accountsToDeactivate.length; i++) {
 		accountsToDeactivate[i].isActive = false;
 	}
 
 	var deactivateAccountsAction = component.get("c.deactivateAccounts");
-	action.setParams({ accountsToDeactivate: accountsToDeactivate });
-	action.setCallback(this, function(response) {
+	deactivateAccountsAction.setParams({ accountsToDeactivate: accountsToDeactivate });
+	deactivateAccountsAction.setCallback(this, function(response) {
 		var state = response.getState();
 		if (state === "SUCCESS") {
 			// handle success
@@ -139,26 +139,26 @@ This should be broken up into some separate helper methods
 `controller.js file`
 ```javascript
 deactivateOldAccounts: function(component, event, helper) {
-	var accountsToDeactivate = component.get("oldAccounts");
+	var accountsToDeactivate = component.get("v.oldAccounts");
 
-	helper.deactivateAccounts(helper, accountsToDeactivate);
+	helper.deactivateAccounts(component, helper, accountsToDeactivate);
 }
 ```
 
 `helper.js file`
 ```javascript
-deactivateAccounts: function(helper, accountsToDeactivate) {
-	for (let i = 0; i < accountsToDeactiveate.length; i++) {
+deactivateAccounts: function(component, helper, accountsToDeactivate) {
+	for (let i = 0; i < accountsToDeactivate.length; i++) {
 		accountsToDeactivate[i].isActive = false;
 	}
 
-	helper.updateAccounts(accountsToDeactivate);
+	helper.updateAccounts(component, accountsToDeactivate);
 },
 
-updateAccounts: function(accountsToUpdate) {
+updateAccounts: function(component, accountsToUpdate) {
 	var updateAccountsAction = component.get("c.updateAccounts");
-	action.setParams({ accountsToUpdate: accountsToUpdate });
-	action.setCallback(this, function(response) {
+	updateAccountsAction.setParams({ accountsToUpdate: accountsToUpdate });
+	updateAccountsAction.setCallback(this, function(response) {
 		var state = response.getState();
 		if (state === "SUCCESS") {
 			// handle success
@@ -168,7 +168,7 @@ updateAccounts: function(accountsToUpdate) {
 			// handle error
 		}
 	});
-	$A.enqueueAction(updateAccuntsAction);
+	$A.enqueueAction(updateAccountsAction);
 }
 ```
 
@@ -176,11 +176,11 @@ Here is an example of good sized controller methods.  Note that the methods do n
 ```javascript
 doInit: function(component, event, helper) {
 	var activeAccounts = helper.getActiveAccounts(component);
-	component.set("activeAccounts", activeAccounts);
+	component.set("v.activeAccounts", activeAccounts);
 },
 
 deactivateAccount: function(component, event, helper) {
-	var accountToDeactivate = component.get("selectedAccount");
+	var accountToDeactivate = component.get("v.selectedAccount");
 	helper.deactivateAccount(component, accountToDeactivate);
 }
 ```
@@ -196,18 +196,18 @@ If your helper method starts to get large, you can do 1 of 2 things:
 * Create another helper method and call it with helper. syntax
 `helper.js file`
 ```javascript
-deactivateAccounts: function(helper, accountsToDeactivate) {
-	for (let i = 0; i < accountsToDeactiveate.length; i++) {
+deactivateAccounts: function(component, helper, accountsToDeactivate) {
+	for (let i = 0; i < accountsToDeactivate.length; i++) {
 		accountsToDeactivate[i].isActive = false;
 	}
 
-	helper.updateAccounts(accountsToDeactivate);
+	helper.updateAccounts(component, accountsToDeactivate);
 },
 
-updateAccounts: function(accountsToUpdate) {
+updateAccounts: function(component, accountsToUpdate) {
 	var updateAccountsAction = component.get("c.updateAccounts");
-	action.setParams({ accountsToUpdate: accountsToUpdate });
-	action.setCallback(this, function(response) {
+	updateAccountsAction.setParams({ accountsToUpdate: accountsToUpdate });
+	updateAccountsAction.setCallback(this, function(response) {
 		var state = response.getState();
 		if (state === "SUCCESS") {
 			// handle success
@@ -217,7 +217,7 @@ updateAccounts: function(accountsToUpdate) {
 			// handle error
 		}
 	});
-	$A.enqueueAction(updateAccuntsAction);
+	$A.enqueueAction(updateAccountsAction);
 }
 ```
 
@@ -248,7 +248,7 @@ Two things to note about using static resources: for LockerService to accept you
 
 account component file
 ```html
-<aura:component description"New account component">
+<aura:component description="New account component">
 	<ltng:require scripts="{!$Resource.accountCopier + '/accountCopier.js'}" afterScriptsLoaded="{!c.doInit}" />
 
 	<!-- The rest of your component -->
@@ -258,7 +258,7 @@ account component file
 `helper.js file`
 ```javascript
 createPrepopulatedAccount: function(accountToCopy) {
-	var newAccount = accountCopier.copyAccount(accountToCop);
+	return accountCopier.copyAccount(accountToCopy);
 }
 ```
 
@@ -272,13 +272,13 @@ The same CSS rules apply to css in a lightning component as a normal CSS file.
 
 There are a few guidelines for where to put your styles though.
 
-Global application or community level styles should go in a static resource and be required by the op level component.
+Global application or community level styles should go in a static resource and be required by the top level component.
 
 If you start repeating styling rules in multiple components either push those rules  up into a common parent component, or put them in a static resource.
 
 The Lightning Design System uses a grid system, but it is actually flexbox behind the scenes, so you should have a general understanding of flexbox in order to save yourself from headaches in the future.
 
-When building a Lightning Component, it's important to note that the first element beneath the `<aura:component>` is interpretted as `.THIS` in the component's CSS file. This can lead to confusing when attempting to target the top level element in CSS.
+When building a Lightning Component, it's important to note that the first element beneath the `<aura:component>` is interpreted as `.THIS` in the component's CSS file. This can lead to confusion when attempting to target the top level element in CSS.
 
 Examples:
 `component.css`
@@ -287,7 +287,7 @@ Examples:
 	width: 100%;
 }
 ```
-This will be interpretted to mean a hierarchy as shown in the following Lightning Component:
+This will be interpreted to mean a hierarchy as shown in the following Lightning Component:
 `component.cmp`
 ```html
 <aura:component>
@@ -305,7 +305,7 @@ On the other hand, to target the top level element with a specific class (E.g. d
 	background: green;
 }
 ```
-This will be interpretted to mean a hierarchy such as
+This will be interpreted to mean a hierarchy such as
 `component.cmp`
 ```html
 <aura:component>

@@ -4,7 +4,9 @@ A comprehensive guide to writing clean, maintainable, and testable Salesforce co
 
 ## Overview
 
-This guide provides coding standards, architectural patterns, and working examples for Salesforce development. It covers Apex, Lightning Web Components, Aura Components, and testing strategies with a focus on maintainability, readability, and adherence to SOLID principles.
+This guide applies the principles of *Clean Code: A Handbook of Agile Software Craftsmanship* by Robert C. Martin to Salesforce development. It turns them into coding standards, architectural patterns, and working examples for Apex, Lightning Web Components, Aura components, the data model, Agentforce, and testing.
+
+Each principle is explained where it is used. The book explains them in full, and is worth reading alongside this guide.
 
 ## Written for People and AI Agents
 
@@ -171,8 +173,7 @@ This guide emphasizes SOLID principles throughout:
 
 ### Code Organization
 
-- MVC pattern: Model (DAOs), View (LWC/Aura), Controller (Controllers)
-- Separate read and write operations
+- MVC pattern: Model (data accessors), View (Lightning Web Components), Controller (Apex controllers)
 - Keep classes small and focused
 - Use dependency injection for testability
 - Favor composition over inheritance
@@ -185,11 +186,12 @@ This guide emphasizes SOLID principles throughout:
 
 ## How to Use This Guide
 
-1. **Start with SOLID_GUIDE.md** to understand core principles
-2. **Review relevant style guides** for your technology (Apex, LWC, Aura)
-3. **Study the DAO pattern** via DATA_ACCESSOR_GUIDE.md
-4. **Explore examples** to see patterns in action
-5. **Apply to your projects** incrementally
+1. **Start with the Key Principles** below: Clean Code, then SOLID
+2. **Read SOLID_GUIDE.md** for the SOLID principles with examples
+3. **Review relevant style guides** for your technology (Apex, LWC, Aura)
+4. **Study the DAO pattern** via DATA_ACCESSOR_GUIDE.md
+5. **Explore examples** to see patterns in action
+6. **Apply to your projects** incrementally, leaving each file cleaner than you found it
 
 ## Repository Structure
 

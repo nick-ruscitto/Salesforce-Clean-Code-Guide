@@ -1,4 +1,4 @@
 public interface AccountDAO extends DmlInterface {
-	Account getAccountFromId(Id accountId);
-	List<Account> getAccountsFromIdSet(Set<Id> accountIds);
+	Account getAccountById(Id accountId);
+	List<Account> getAccountsByIds(Set<Id> accountIds);
 }

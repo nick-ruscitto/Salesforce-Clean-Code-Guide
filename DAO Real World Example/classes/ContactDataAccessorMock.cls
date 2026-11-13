@@ -8,7 +8,7 @@ public inherited sharing class ContactDataAccessorMock extends DmlBaseMock imple
 		this.mockDatabaseContacts = (List<Contact>)super.records;
 	}
 
-	public Contact getContactFromId(Id contactId) {
+	public Contact getContactById(Id contactId) {
 		for (Contact c : mockDatabaseContacts) {
 			if (c.Id == contactId) {
 				return c;
@@ -18,7 +18,7 @@ public inherited sharing class ContactDataAccessorMock extends DmlBaseMock imple
 		throw new QueryException('Contact not found');
 	}
 
-	public List<Contact> getContactsFromIdSet(Set<Id> contactIds) {
+	public List<Contact> getContactsByIds(Set<Id> contactIds) {
 		List<Contact> contactsToReturn = new List<Contact>();
 
 		for (Contact c : mockDatabaseContacts) {
@@ -30,7 +30,7 @@ public inherited sharing class ContactDataAccessorMock extends DmlBaseMock imple
 		return contactsToReturn;
 	}
 
-	public List<Contact> getContactsFromAccountId(Id accountId) {
+	public List<Contact> getContactsByAccountId(Id accountId) {
 		List<Contact> contactsToReturn = new List<Contact>();
 
 		for (Contact c : mockDatabaseContacts) {

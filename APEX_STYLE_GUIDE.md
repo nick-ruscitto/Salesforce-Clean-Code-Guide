@@ -2,17 +2,21 @@
 
 ## Contents
 1. [Naming Conventions](#naming)
+	* General Naming Rules
 	* Classes
 	* Interfaces
 	* Variables
 	* Properties
 	* Methods
+	* Visualforce Pages & Components
 	* Files
 2. [Formatting](#formatting)
+	* Braces
+	* Indentation
+	* Line Wrapping
 	* Methods
 	* Code Blocks
-	* Classes
-	* SOQL & SOSL
+	* Queries
 3. [Comments](#comments)
 4. [Code Style](#code-style)
 	* Class Layout
@@ -159,7 +163,7 @@ public String AccountName {get; set;}
 	* They should start with a lower-case letter
 	* The first letter of all subsequent words should be capitalized
 * Method names are verbs or verb phrases, such as `postPayment`, `deletePage`, or `save`, and follow one of the patterns below
-	* verb-Noun or verb-Noun-How (getAccountsFromId, getUsers)
+	* verb-Noun or verb-Noun-How (getUsers, getAccountsByOwnerId)
 	* Verb-adj-noun (getSelectedUsers, hasSelectedItems)
 	* Verb-adj (isDeleted) Boolean returns always use present tense states of being: is, has, are, etc
 * Accessors, mutators, and predicates should be named for their value and prefixed with _get_, _set_, and _is_ 
@@ -246,9 +250,7 @@ if (someCondition)
 Indentation should use tabs, not spaces and tab size should equal 4 spaces
 
 ##### Line Wrapping
-When an expression will not fit on a single line, break it according to these general principles:
-* Start thinking about breaking to the new line once you hit around 50 characters
-* Once you have hit 80 characters in a line you have gone too far and need to break that line up
+When an expression is hard to read on a single line, break it according to these general principles:
 * Break before an operator
 * Break after a comma
 * Prefer higher-level breaks to lower-level breaks
@@ -260,7 +262,7 @@ someReallyReallyLongName = someOtherLongVariableName
 	+ 4 * someBigMultiplier;
 
 // BAD
-// Too Long
+// Hard to read on one line
 someReallyReallyLongName = someOtherLongVariableName * (someLongName + someOtherVariable - thirdLongVariable) + 4 * someBigMultiplier;
 
 // No Indent
@@ -380,6 +382,8 @@ Order the members of a class from top to bottom:
 
 A class then reads from top to bottom like a newspaper article: the high-level methods first, and the details below the methods that use them.
 
+Keep related methods together within each group.  A set of methods that only call each other and share no data with the rest of the class is often a new class hiding in the existing one.
+
 [Back to Contents](#contents)
 
 #### Methods
@@ -408,7 +412,7 @@ public void reserveSeat(Seat requestedSeat) {
 Return an empty collection instead of `null`. When a single record must exist and does not, throw an exception. Do not pass `null` to mean "no value"; write a separate method instead.
 ```java
 // AVOID
-public List<Contact> getContactsFromAccountId(Id accountId) {
+public List<Contact> getContactsByAccountId(Id accountId) {
 	if (accountId == null) {
 		return null;
 	}
@@ -416,7 +420,7 @@ public List<Contact> getContactsFromAccountId(Id accountId) {
 }
 
 // GOOD
-public List<Contact> getContactsFromAccountId(Id accountId) {
+public List<Contact> getContactsByAccountId(Id accountId) {
 	if (accountId == null) {
 		return new List<Contact>();
 	}
@@ -441,8 +445,8 @@ Initialize a Boolean where it is declared or built, so it is never `null`.
 ##### Bulkify queries
 Always bulkify queries in triggers to avoid hitting governor limits and improve performance.
 
-##### Use a facade
-Use the [facade pattern](https://en.wikipedia.org/wiki/Facade_pattern "Description of the Facade Pattern") to simplify your triggers.  Do not put any actual business logic inside the trigger, extract that out into another facade class.
+##### Keep logic out of triggers
+A trigger contains no logic.  It hands each event to classes that each do one thing.  The [facade pattern](https://en.wikipedia.org/wiki/Facade_pattern "Description of the Facade Pattern") organizes this: the trigger calls one facade method for each event, and the facade calls the classes that hold the logic.
 
 ##### Prevent recursion
 Take appropriate measures to prevent unwanted recursive execution of triggers.  For example, updating a record in the `after update` trigger of the same object or a related object could invoke the trigger recursively.  Use `before update` if possible.  When you use `after update` to make changes on the same record, you need to use `update` statement to persist the changes, and that results in firing before/after triggers again.  You can avoid that by using `before update` triggers as you wouldn't then need to use the update statement.
@@ -474,9 +478,6 @@ Only create 1 trigger per object.
 [Back to Contents](#contents)
 
 #### Apex Classes
-##### Group your methods
-Group related methods together.  This makes the code easier to navigate, and also helps to point out where you may have a new class hiding in your existing class.
-
 ##### Do not use asserts in main code
 Asserts are for tests, not main code.
 
@@ -585,7 +586,7 @@ What happens when we add a new field to that object?  We will have to find all o
 
 If we just centralized that query into its own data accessor class and method, it would be reused throughout our code, and we would only have to make that field update in one place.
 
-Put the above SOQL query inside a class named `AccountDataAccessor`, inside a method called `getAccountById(Id accountId)`.  
+Put each query in the data accessor for its object, as described in the [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md).
 
 [Back to Contents](#contents)
 

@@ -15,7 +15,7 @@ private class AccountDataAccessorTest {
 	}
 
 	@isTest
-	static void getAccountFromId_givenValidId_shouldReturnAccount() {
+	static void getAccountById_givenValidId_shouldReturnAccount() {
 		Account testAccount = [
 			SELECT Id
 			FROM Account
@@ -25,7 +25,7 @@ private class AccountDataAccessorTest {
 		AccountDataAccessor dao = new AccountDataAccessor();
 
 		Test.startTest();
-			Account result = dao.getAccountFromId(testAccount.Id);
+			Account result = dao.getAccountById(testAccount.Id);
 		Test.stopTest();
 
 		Assert.areEqual(testAccount.Id, result.Id, 'Should return account with matching Id');
@@ -33,7 +33,7 @@ private class AccountDataAccessorTest {
 	}
 
 	@isTest
-	static void getAccountsFromIdSet_givenMultipleIds_shouldReturnAccounts() {
+	static void getAccountsByIds_givenMultipleIds_shouldReturnAccounts() {
 		List<Account> testAccounts = [
 			SELECT Id
 				, Name
@@ -48,7 +48,7 @@ private class AccountDataAccessorTest {
 		AccountDataAccessor dao = new AccountDataAccessor();
 
 		Test.startTest();
-			List<Account> results = dao.getAccountsFromIdSet(accountIds);
+			List<Account> results = dao.getAccountsByIds(accountIds);
 		Test.stopTest();
 
 		Assert.areEqual(2, results.size(), 'Should return 2 accounts');

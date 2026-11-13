@@ -128,7 +128,7 @@ public with sharing class ProjectSubject {
 			return recordId;
 		}
 
-		return taskAccessor.getTaskFromId(recordId).Project__c;
+		return taskAccessor.getTaskById(recordId).Project__c;
 	}
 }
 ```

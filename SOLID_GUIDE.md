@@ -62,7 +62,7 @@ public class AccountController {
 	public AccountDAO accountDataAccessor = new AccountDataAccessor();
 
 	public void changeAccountOwnership(Id accountId) {
-		Account account = accountDataAccessor.getAccountFromId(accountId);
+		Account account = accountDataAccessor.getAccountById(accountId);
 		account.OwnerId = UserInfo.getUserId();
 		accountDataAccessor.updateRecords(new List<Account>{ account });
 	}
@@ -71,13 +71,13 @@ public class AccountController {
 
 ```java
 public interface AccountDAO extends DmlInterface {
-	Account getAccountFromId(Id accountId);
+	Account getAccountById(Id accountId);
 }
 ```
 
 ```java
 public class AccountDataAccessor extends DmlBase implements AccountDAO {
-	public Account getAccountFromId(Id accountId) {
+	public Account getAccountById(Id accountId) {
 		//Query logic
 	}
 }

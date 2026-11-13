@@ -8,6 +8,6 @@ public with sharing class ContactController {
 			throw UserFacingError.withMessage('Account ID is required');
 		}
 
-		return contactAccessor.getContactsFromAccountId(accountId);
+		return contactAccessor.getContactsByAccountId(accountId);
 	}
 }

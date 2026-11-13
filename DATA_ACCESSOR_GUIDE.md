@@ -14,8 +14,8 @@ The DAO (Data Access Object) is the interface named after the pattern itself. Th
 
 ```java 
 public interface UserDAO extends DmlInterface {
-	User getUserFromId(String userId);
-	List<User> getUsersFromIdSet(Set<Id> userIds);
+	User getUserById(String userId);
+	List<User> getUsersByIds(Set<Id> userIds);
 }
 ```
 
@@ -27,7 +27,7 @@ The DataAccessor is the class that implements the DAO. All of the queries are bu
 **Example:**
 ```java
 public inherited sharing class UserDataAccessor extends DmlBase implements UserDAO {
-	public User getUserFromId(String userId) {
+	public User getUserById(String userId) {
 		return [
 			SELECT Id
 				, FirstName
@@ -38,7 +38,7 @@ public inherited sharing class UserDataAccessor extends DmlBase implements UserD
 		];
 	}
 	
-	public List<User> getUsersFromIdSet(Set<Id> userIds) {
+	public List<User> getUsersByIds(Set<Id> userIds) {
 		return [
 			SELECT Id
 				, FirstName
@@ -70,7 +70,7 @@ public inherited sharing class UserDataAccessorMock extends DmlBaseMock implemen
 		this.mockDatabaseUsers = (List<User>)super.records;
 	}
 	
-	public User getUserFromId(String userId) {
+	public User getUserById(String userId) {
 		User userToReturn;
 		
 		for (User u : mockDatabaseUsers) {
@@ -86,7 +86,7 @@ public inherited sharing class UserDataAccessorMock extends DmlBaseMock implemen
 		}
 	}
 	
-	public List<User> getUsersFromIdSet(Set<Id> userIds) {
+	public List<User> getUsersByIds(Set<Id> userIds) {
 		List<User> usersToReturn = new List<User>();
 
 		for (User u : mockDatabaseUsers) {

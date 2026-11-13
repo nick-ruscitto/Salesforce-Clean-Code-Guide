@@ -8,7 +8,7 @@ public with sharing class AccountController {
 			throw UserFacingError.withMessage('Account ID is required');
 		}
 
-		List<Account> accounts = accountAccessor.getAccountsFromIdSet(new Set<Id>{ accountId });
+		List<Account> accounts = accountAccessor.getAccountsByIds(new Set<Id>{ accountId });
 
 		if (accounts.isEmpty()) {
 			throw UserFacingError.withMessage('Account not found');

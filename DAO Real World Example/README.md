@@ -15,8 +15,8 @@ This example follows SOLID principles with separated concerns:
 ### Data Access Layer
 
 **AccountDAO.cls** (Interface)
-- `Account getAccountFromId(Id accountId)` - Single record query
-- `List<Account> getAccountsFromIdSet(Set<Id> accountIds)` - Bulk query
+- `Account getAccountById(Id accountId)` - Single record query
+- `List<Account> getAccountsByIds(Set<Id> accountIds)` - Bulk query
 
 **AccountDataAccessor.cls** (Implementation)
 - Queries `Id, Name` fields
@@ -31,9 +31,9 @@ This example follows SOLID principles with separated concerns:
 - Validates field selection and filtering
 
 **ContactDAO.cls** (Interface)
-- `Contact getContactFromId(Id contactId)` - Single record query
-- `List<Contact> getContactsFromIdSet(Set<Id> contactIds)` - Bulk query by Ids
-- `List<Contact> getContactsFromAccountId(Id accountId)` - Query by Account relationship
+- `Contact getContactById(Id contactId)` - Single record query
+- `List<Contact> getContactsByIds(Set<Id> contactIds)` - Bulk query by Ids
+- `List<Contact> getContactsByAccountId(Id accountId)` - Query by Account relationship
 
 **ContactDataAccessor.cls** (Implementation)
 - Queries `Id, FirstName, LastName, Email, AccountId` fields
@@ -138,7 +138,7 @@ public with sharing class ContactController {
 
     @AuraEnabled
     public static List<Contact> getContactsByAccountId(Id accountId) {
-        return contactAccessor.getContactsFromAccountId(accountId);
+        return contactAccessor.getContactsByAccountId(accountId);
     }
 }
 ```

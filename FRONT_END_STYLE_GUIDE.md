@@ -110,7 +110,7 @@ Remember to close all your elements (including empty ones like the input below):
 </button>
 ```
 
-Do your best to avoid making a line more than 80 characters, if you start to get that long, make a new line.
+When a line gets hard to read, break it onto a new line.
 ```html
 <button class="slds-button slds-button_icon slds-button_icon-border-filled slds-button_icon-x-small slds-shrink-none"
 		aria-haspopup="true">

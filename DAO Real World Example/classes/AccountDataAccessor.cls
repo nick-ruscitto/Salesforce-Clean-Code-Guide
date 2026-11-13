@@ -1,6 +1,6 @@
 public inherited sharing class AccountDataAccessor extends DmlBase implements AccountDAO {
 
-	public Account getAccountFromId(Id accountId) {
+	public Account getAccountById(Id accountId) {
 		Account a = [
 			SELECT Id
 				, Name
@@ -12,7 +12,7 @@ public inherited sharing class AccountDataAccessor extends DmlBase implements Ac
 		return a;
 	}
 
-	public List<Account> getAccountsFromIdSet(Set<Id> accountIds) {
+	public List<Account> getAccountsByIds(Set<Id> accountIds) {
 		return [
 			SELECT Id
 				, Name

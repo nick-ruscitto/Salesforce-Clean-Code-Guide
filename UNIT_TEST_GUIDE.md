@@ -32,7 +32,7 @@ Apex compiles and runs on the server, so every test run is a deploy followed by 
 2. Deploy them together and run the test
 3. Make the test pass before moving on to the next unit
 
-Mock the database with the [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) so that each run stays fast.
+Keep each run fast by putting database access behind an interface and replacing it with a mock in unit tests. The [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) is one way to do this.
 
 ## F.I.R.S.T
 
@@ -124,7 +124,7 @@ public with sharing class AccountController {
 	public static AccountDAO accountAccessor = new AccountDataAccessor();
 
 	public static void changeAccountOwnership(Id accountId) {
-		Account account = accountAccessor.getAccountFromId(accountId);
+		Account account = accountAccessor.getAccountById(accountId);
 		account.OwnerId = UserInfo.getUserId();
 		accountAccessor.updateRecords(new List<Account>{ account });
 	}
