@@ -161,6 +161,52 @@ private static Account buildMockAccount(Id ownerId) {
 
 Much like `@testSetup` methods, the `buildMockAccount()` method creates the mock record so that a database interaction is not needed. This test method now only checks to make sure the method it is testing changes the owner of the Account record. The test methods for the methods in Data Accessor classes should actually run DML and queries across the associated objects to account for backend interactions. This example also shows both a positive and negative test case. Unit tests should cover the full spectrum of possible outcomes of the code, not just what ideally should happen.
 
+**Testing platform features:**
+
+**Asynchronous Apex:** Enqueue the job between `Test.startTest()` and `Test.stopTest()`. Queued jobs, future methods, and their finalizers run when `Test.stopTest()` is called, so assert after it.
+
+```java
+Test.startTest();
+	System.enqueueJob(new AccountRatingQueueable(accountIds));
+Test.stopTest();
+
+Assert.areEqual('Hot', [SELECT Rating FROM Account WHERE Id IN :accountIds LIMIT 1].Rating);
+```
+
+**Callouts:** Unit tests cannot make callouts. Register a mock that returns a fixed response.
+
+```java
+Test.setMock(HttpCalloutMock.class, new WeatherServiceCalloutMock());
+```
+
+**Platform events:** Published events are delivered when `Test.stopTest()` is called, or immediately with `Test.getEventBus().deliver()`.
+
+**Invocable actions:** Call the invocable method directly with a list of requests, and assert on the list of responses.
+
+```java
+CaseSummaryAction.Request request = new CaseSummaryAction.Request();
+request.caseId = testCaseId;
+
+List<CaseSummaryAction.Response> responses = CaseSummaryAction.summarizeCases(
+	new List<CaseSummaryAction.Request>{ request }
+);
+
+Assert.areEqual(1, responses.size());
+```
+
+**Prompt templates:** `ConnectApi` cannot be called from a unit test. Replace the class that invokes the template with a mock that returns a fixed response, as described in the [Agentforce Guide](./AGENTFORCE_GUIDE.md#invoke-templates-through-an-interface).
+
+```java
+@isTest
+public class PromptTemplateInvokerMock implements PromptTemplateInvokerInterface {
+	public String response;
+
+	public String invoke(String templateName, Map<String, String> textInputs) {
+		return response;
+	}
+}
+```
+
 **Recap:**
 
 - Clean tests are just as important as clean production code

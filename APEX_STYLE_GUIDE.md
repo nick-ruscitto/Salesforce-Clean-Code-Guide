@@ -15,11 +15,14 @@
 	* SOQL & SOSL
 3. [Comments](#comments)
 4. [Code Style](#code-style)
+	* Class Layout
+	* Methods
 	* Triggers
 	* Apex Classes
 	* Asynchronous Apex
 	* SOQL Queries
 5. [Exceptions](#exceptions)
+6. [Security](#security)
 
 ## Naming
 Appropriate naming helps us glean useful information quickly.  Conventions facilitate self-documenting code that improves readability and consistency.
@@ -351,7 +354,82 @@ Code does not lie, comments do.  When code changes, but the comments do not, the
 
 Methods should be named well enough to not need comments.  If you need a comment saying what your method is doing, you either have a name that isn't descriptive enough, or your method is doing too much.
 
+The comments that do belong in code are:
+* Legal and copyright notices
+* Documentation of public interfaces that other code depends on, such as ApexDoc on a shared service or the descriptions of an invocable action
+* Warnings of consequences, such as why a class runs `without sharing`
+* `TODO` notes that reference a work item
+
 ## Code Style
+
+#### Class Layout
+Order the members of a class from top to bottom:
+1. Constants
+2. Static variables
+3. Instance variables and properties
+4. Constructors
+5. Public methods
+6. Private methods, each placed below the method that first calls it
+7. Inner classes
+
+A class then reads from top to bottom like a newspaper article: the high-level methods first, and the details below the methods that use them.
+
+[Back to Contents](#contents)
+
+#### Methods
+##### Do one thing, with no side effects
+A method does what its name says and nothing else. A method named `isEligible` does not change a field, send an email, or write to the database.
+
+##### Separate commands from queries
+A method either changes something (a command) or answers something (a query), never both.
+```java
+// AVOID - answers a question and changes state
+public Boolean reserveSeat(Seat requestedSeat) {
+	...
+}
+
+// GOOD
+public Boolean isSeatAvailable(Seat requestedSeat) {
+	...
+}
+
+public void reserveSeat(Seat requestedSeat) {
+	...
+}
+```
+
+##### Do not return null
+Return an empty collection instead of `null`. When a single record must exist and does not, throw an exception. Do not pass `null` to mean "no value"; write a separate method instead.
+```java
+// AVOID
+public List<Contact> getContactsFromAccountId(Id accountId) {
+	if (accountId == null) {
+		return null;
+	}
+	...
+}
+
+// GOOD
+public List<Contact> getContactsFromAccountId(Id accountId) {
+	if (accountId == null) {
+		return new List<Contact>();
+	}
+	...
+}
+```
+
+##### Do not compare Booleans to true or false
+```java
+// AVOID
+if (isActive == true) {
+
+// GOOD
+if (isActive) {
+```
+
+Initialize a Boolean where it is declared or built, so it is never `null`.
+
+[Back to Contents](#contents)
 
 #### Triggers
 ##### Bulkify queries
@@ -522,6 +600,73 @@ public with sharing class UserFacingError {
 ```
 ```java
 throw UserFacingError.withMessage('Account ID is required');
+```
+
+#### Prefer exceptions to error codes
+Do not return a value such as `-1`, `false`, or a status string to signal that something failed. Throw an exception, and catch it in the code that can handle it.
+```java
+// AVOID
+public Integer reserveSeat(Seat requestedSeat) {
+	if (!isSeatAvailable(requestedSeat)) {
+		return -1;
+	}
+	...
+}
+
+// GOOD
+public void reserveSeat(Seat requestedSeat) {
+	if (!isSeatAvailable(requestedSeat)) {
+		throw new SeatUnavailableException('Seat ' + requestedSeat.Name + ' is already reserved. Choose another seat.');
+	}
+	...
+}
+```
+
+#### Write messages for the person reading them
+A message shown to a user says what happened and what to do next.
+
+| Avoid | Prefer |
+|---|---|
+| Invalid date range. | End Date cannot be before Start Date. Choose a later End Date. |
+| Required field missing. | Enter a Last Name to save this contact. |
+
+Validation rule messages show next to the field they concern whenever there is one.
+
+[Back to Contents](#contents)
+
+## Security
+
+#### Declare sharing on every class
+* Use `with sharing` by default
+* Use `inherited sharing` for classes that run in the caller's context, such as data accessors and utilities
+* Use `without sharing` only when the class must see records the user cannot, and state the reason in a comment
+
+#### Respect the user's permissions
+When an operation must respect the running user's object and field permissions, run it in user mode.
+```java
+List<Account> accounts = [
+	SELECT Id,
+		Name
+	FROM Account
+	WHERE Id IN :accountIds
+	WITH USER_MODE
+];
+
+Database.insert(newContacts, AccessLevel.USER_MODE);
+```
+
+#### Do not hard-code Ids or names
+Record Ids, profile names, and usernames differ between orgs. Query by `DeveloperName`, or store the value in custom metadata or a custom label.
+
+#### Do not build queries from input
+Never concatenate user input into dynamic SOQL. Use bind variables.
+```java
+Map<String, Object> bindings = new Map<String, Object>{ 'searchName' => '%' + searchTerm + '%' };
+List<Account> accounts = Database.queryWithBinds(
+	'SELECT Id, Name FROM Account WHERE Name LIKE :searchName',
+	bindings,
+	AccessLevel.USER_MODE
+);
 ```
 
 [Back to Contents](#contents)

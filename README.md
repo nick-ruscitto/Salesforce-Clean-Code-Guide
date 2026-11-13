@@ -45,6 +45,16 @@ This guide provides coding standards, architectural patterns, and working exampl
 - Avoiding false positives and false negatives
 - Test-driven development approach
 
+**[DATA_MODEL_GUIDE.md](./DATA_MODEL_GUIDE.md)**
+- Naming objects, fields, relationships, and picklists
+- Validation rules
+- Descriptions and help text
+
+**[AGENTFORCE_GUIDE.md](./AGENTFORCE_GUIDE.md)**
+- Invocable actions for agents
+- Calling prompt templates from Apex
+- Validating model output
+
 **[SOLID_GUIDE.md](./SOLID_GUIDE.md)**
 - Single Responsibility Principle (SRP)
 - Open/Closed Principle (OCP)
@@ -120,6 +130,18 @@ Example trigger implementation using the Facade design pattern with SOLID princi
 
 ## Key Principles
 
+### Clean Code
+
+Code is written for the people who read and change it next.
+
+- **Meaningful names**: Names reveal intent, without encodings or noise words
+- **Small methods**: A method does one thing, at one level of abstraction, with three or fewer arguments and no side effects
+- **Command-query separation**: A method either changes something or answers something, never both
+- **Comments are a last resort**: Express intent in code; comment only what code cannot say
+- **Don't repeat yourself**: Each piece of logic lives in one place
+- **Errors are exceptions**: Throw exceptions rather than returning error codes, and do not return null
+- **The Boy Scout Rule**: Leave every file cleaner than you found it
+
 ### SOLID Principles
 
 This guide emphasizes SOLID principles throughout:
@@ -146,6 +168,12 @@ This guide emphasizes SOLID principles throughout:
 - Use dependency injection for testability
 - Favor composition over inheritance
 
+### Platform Choices
+
+- Build user interfaces with Lightning Web Components, not Aura components or Visualforce
+- Run asynchronous work in Queueable Apex rather than future methods
+- Automate with Flow or Apex, not Workflow Rules or Process Builder
+
 ## How to Use This Guide
 
 1. **Start with SOLID_GUIDE.md** to understand core principles
@@ -165,6 +193,8 @@ Salesforce Clean Code Guide/
 ├── FRONT_END_STYLE_GUIDE.md
 ├── DATA_ACCESSOR_GUIDE.md
 ├── UNIT_TEST_GUIDE.md
+├── DATA_MODEL_GUIDE.md
+├── AGENTFORCE_GUIDE.md
 ├── SOLID_GUIDE.md
 ├── DAO Base Framework/
 │   └── classes/
