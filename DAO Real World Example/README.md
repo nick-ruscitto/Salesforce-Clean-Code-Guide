@@ -6,8 +6,8 @@ This example demonstrates the proper use of the Data Access Object (DAO) pattern
 
 This example follows SOLID principles with separated concerns:
 
-- **Single Responsibility**: Each service handles one type of operation
-- **Dependency Inversion**: All services depend on DAO interfaces, not concrete implementations
+- **Single Responsibility**: Each controller handles one type of operation
+- **Dependency Inversion**: All controllers depend on DAO interfaces, not concrete implementations
 - **Open/Closed**: New functionality can be added without modifying existing code
 
 ## Files
@@ -47,35 +47,35 @@ This example follows SOLID principles with separated concerns:
 - Tests actual database queries
 - Validates relationships and field selection
 
-### Apex Service Classes
+### Apex Controller Classes
 
-**AccountService.cls** (Read operations for Account)
+**AccountController.cls** (Read operations for Account)
 - Uses `AccountDAO`
 - Method: `getAccountById(Id accountId)`
 - Returns Account record for display
 
-**ContactService.cls** (Read operations for Contact)
+**ContactController.cls** (Read operations for Contact)
 - Uses `ContactDAO`
 - Method: `getContactsByAccountId(Id accountId)`
 - Returns list of Contacts for an Account
 
-**ContactFormService.cls** (Write operations for Contact)
+**ContactFormController.cls** (Write operations for Contact)
 - Uses `ContactDAO`
-- Method: `createContact(String firstName, String lastName, String email, Id accountId)`
+- Method: `createContact(Contact newContact)`
 - Creates new Contact record
 
 ### Test Classes
 
-**AccountServiceTest.cls**
+**AccountControllerTest.cls**
 - Tests: Valid ID, null ID, non-existent ID
 - Demonstrates mocking with `AccountDataAccessorMock`
 
-**ContactServiceTest.cls**
+**ContactControllerTest.cls**
 - Tests: Multiple contacts, no contacts, null ID
 - Demonstrates `MockSObjectBuilder` to create test Contact records
 - Shows how to mock query results
 
-**ContactFormServiceTest.cls**
+**ContactFormControllerTest.cls**
 - Tests: Valid data, missing last name, missing account, minimal data
 - Demonstrates mocking insert operations
 
@@ -83,7 +83,7 @@ This example follows SOLID principles with separated concerns:
 
 **accountContainer** (Container/Orchestrator)
 - Placed on Account record pages
-- Uses `@wire` to load Account from `AccountService`
+- Uses `@wire` to load Account from `AccountController`
 - Passes data down to child components
 - Coordinates communication between children
 
@@ -92,7 +92,7 @@ This example follows SOLID principles with separated concerns:
 - Receives Account data via `@api` from parent
 
 **accountContactList** (Data Display + Action)
-- Uses `@wire` to load Contacts from `ContactService`
+- Uses `@wire` to load Contacts from `ContactController`
 - Displays contacts as cards
 - "New Contact" button to toggle form
 - Handles contact creation events
@@ -101,7 +101,7 @@ This example follows SOLID principles with separated concerns:
 - Form for creating new contacts
 - Receives `accountId` via `@api` from parent
 - Fires `contactsaved` and `cancel` events to parent
-- Calls `ContactFormService.createContact()`
+- Calls `ContactFormController.createContact()`
 
 ## DAO Pattern Architecture
 
@@ -126,26 +126,24 @@ The Data Access Object pattern separates database operations into dedicated clas
 **Data Accessor Test** - Integration tests
 - Tests production implementation against real database
 - Validates SOQL syntax and field selection
-- Not used in service unit tests (those use mocks)
+- Not used in controller unit tests (those use mocks)
 
 ## Key Concepts Demonstrated
 
-### 1. Static Service Pattern with Public DAO Variable
+### 1. Static Controller Pattern with Public DAO Variable
 
 ```apex
-public with sharing class ContactService {
+public with sharing class ContactController {
     public static ContactDAO contactAccessor = new ContactDataAccessor();
 
     @AuraEnabled(cacheable=true)
     public static List<Contact> getContactsByAccountId(Id accountId) {
-        // Business logic
-        List<Contact> contacts = contactAccessor.getContactsFromAccountId(accountId);
-        return contacts;
+        return contactAccessor.getContactsFromAccountId(accountId);
     }
 }
 ```
 
-Services use a public static DAO variable that:
+Controllers use a public static DAO variable that:
 - Defaults to real implementation in production
 - Can be overridden with mocks in tests
 - No constructors or @TestVisible annotations needed
@@ -153,27 +151,26 @@ Services use a public static DAO variable that:
 ### 2. Mocking Query Results
 
 ```apex
-private static Contact buildMockContact(String contactId, String accountId, String firstName, String lastName, String email) {
+private static Contact buildMockContact(String accountId, String firstName, String lastName) {
     MockSObjectBuilder mockBuilder = new MockSObjectBuilder(Contact.sObjectType);
-    mockBuilder.setField('Id', contactId);
+    mockBuilder.setField('Id', MockIdGenerator.getMockId(Contact.sObjectType));
     mockBuilder.setField('AccountId', accountId);
     mockBuilder.setField('FirstName', firstName);
     mockBuilder.setField('LastName', lastName);
-    mockBuilder.setField('Email', email);
     return (Contact) mockBuilder.build();
 }
 
 @isTest
 static void getContactsByAccountId_givenValidId_contactsShouldBeReturned() {
     String testAccountId = MockIdGenerator.getMockId(Account.sObjectType);
-    Contact contact1 = buildMockContact(testContactId1, testAccountId, 'John', 'Doe', 'john@example.com');
-    Contact contact2 = buildMockContact(testContactId2, testAccountId, 'Jane', 'Smith', 'jane@example.com');
+    Contact contact1 = buildMockContact(testAccountId, 'John', 'Doe');
+    Contact contact2 = buildMockContact(testAccountId, 'Jane', 'Smith');
 
     ContactDataAccessorMock contactMock = new ContactDataAccessorMock();
     contactMock.insertRecords(new List<Contact>{ contact1, contact2 });
-    ContactService.contactAccessor = contactMock;
+    ContactController.contactAccessor = contactMock;
 
-    List<Contact> results = ContactService.getContactsByAccountId(testAccountId);
+    List<Contact> results = ContactController.getContactsByAccountId(testAccountId);
 
     System.assertEquals(2, results.size());
 }
@@ -185,9 +182,10 @@ static void getContactsByAccountId_givenValidId_contactsShouldBeReturned() {
 
 ```apex
 ContactDataAccessorMock contactMock = new ContactDataAccessorMock();
-ContactFormService.contactAccessor = contactMock;
+ContactFormController.contactAccessor = contactMock;
 
-Id resultId = ContactFormService.createContact('John', 'Doe', 'john@example.com', testAccountId);
+Contact newContact = new Contact(LastName = 'Doe', AccountId = testAccountId);
+Id resultId = ContactFormController.createContact(newContact);
 
 List<Contact> insertedContacts = (List<Contact>) contactMock.getRecords();
 System.assertEquals(1, insertedContacts.size());
@@ -221,7 +219,7 @@ this.dispatchEvent(new CustomEvent('contactsaved', {
 }));
 
 // Parent component handles event
-<c-new-contact-form oncontactsaved={handleContactSaved}></c-new-contact-form>
+<c-new-contact-form oncontactsaved={closeFormAndAnnounceNewContact}></c-new-contact-form>
 ```
 
 ## Benefits
@@ -234,25 +232,25 @@ this.dispatchEvent(new CustomEvent('contactsaved', {
 
 **No test data pollution** - No leftover records in the database
 
-**SOLID principles** - Single responsibility per service, dependency inversion via interfaces
+**SOLID principles** - Single responsibility per controller, dependency inversion via interfaces
 
-**Simple static service pattern** - No constructors or @TestVisible needed
+**Simple static controller pattern** - No constructors or @TestVisible needed
 
 **Realistic example** - Demonstrates full read/write cycle in a real-world scenario
 
 ## Test Coverage
 
-**AccountServiceTest:**
+**AccountControllerTest:**
 - Happy path: Get existing account
 - Validation: Null account ID
 - Error handling: Non-existent account
 
-**ContactServiceTest:**
+**ContactControllerTest:**
 - Happy path: Get multiple contacts
 - Empty result: Account with no contacts
 - Validation: Null account ID
 
-**ContactFormServiceTest:**
+**ContactFormControllerTest:**
 - Happy path: Create contact with all fields
 - Minimal data: Create contact with only required fields
 - Validation: Missing last name

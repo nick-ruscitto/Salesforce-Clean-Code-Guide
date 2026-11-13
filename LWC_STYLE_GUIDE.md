@@ -136,11 +136,11 @@ export default class BadExampleComponent extends LightningElement {
     @api name = this.defaultName;
 }
 
-const defaultValue = 'component name';
+const DEFAULT_NAME = 'component name';
 
 export default class GoodExampleComponent extends LightningElement {
     // good
-    @api name = defaultName;
+    @api name = DEFAULT_NAME;
 }
 ```
 

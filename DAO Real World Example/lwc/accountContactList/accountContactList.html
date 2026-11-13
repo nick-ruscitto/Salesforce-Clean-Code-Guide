@@ -15,7 +15,7 @@
 				<lightning-button
 					variant="brand"
 					label="New Contact"
-					onclick={handleNewContact}
+					onclick={openNewContactForm}
 					icon-name="utility:add"
 				></lightning-button>
 			</div>
@@ -32,8 +32,8 @@
 				<div class="slds-m-bottom_medium">
 					<c-new-contact-form
 						account-id={accountId}
-						oncontactsaved={handleContactSaved}
-						oncancel={handleCancelNewContact}
+						oncontactsaved={closeFormAndAnnounceNewContact}
+						oncancel={closeNewContactForm}
 					></c-new-contact-form>
 				</div>
 			</template>

@@ -54,7 +54,7 @@ There are two violations of SRP, do you see them?
 Now look at the example below and see how we have corrected them.
 ```java
 public class AccountController {
-	public AccountDataAccessorInterface accountDataAccessor = new AccountDataAccessor();
+	public AccountDAO accountDataAccessor = new AccountDataAccessor();
 	public void changeAccountOwnership(String accountId) {
 		Account account = accountDataAccessor.queryAccountById(accountId);
 		account.OwnerId = UserInfo.getUserId();
@@ -64,14 +64,14 @@ public class AccountController {
 ```
 
 ```java
-public interface AccountDataAccessorInterface {
+public interface AccountDAO {
 	Account queryAccountById(String accountId);
 	void updateAccount(Account account);
 }
 ```
 
 ```java
-public class AccountDataAccessor implements AccountDataAccessorInterface {
+public class AccountDataAccessor implements AccountDAO {
 	public Account queryAccountById(String accountId) {
 		//Query logic
 	}

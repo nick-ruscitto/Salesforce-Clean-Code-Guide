@@ -24,22 +24,22 @@ The trigger framework uses a facade to orchestrate business logic classes, ensur
 
 ### 3. Business Logic Classes
 
-**ContactDataNormalizer.cls**
-- Responsibility: Data filtering and identification
+**ContactEmailChangeFilter.cls**
+- Responsibility: Finding contacts whose email changed
 - Method: `getContactsWithEmailChanges(newContacts, oldContactsMap)`
-- Returns filtered list of contacts based on criteria
+- Returns the contacts whose email changed to a non-blank value
 
 **ContactEmailVerification.cls**
-- Responsibility: Email verification process
-- Method: `sendVerificationEmail(newContacts, oldContactsMap)`
-- Uses ContactDataNormalizer internally to get filtered data
-- Processes email verification (stub implementation)
+- Responsibility: Email verification status
+- Method: `resetVerificationForChangedEmails(newContacts, oldContactsMap)`
+- Uses ContactEmailChangeFilter to find the changed contacts
+- Marks each changed contact's email as unverified
 
 ## SOLID Principles Demonstrated
 
 **Single Responsibility Principle**
-- ContactDataNormalizer: Only filters/identifies data
-- ContactEmailVerification: Only handles email verification
+- ContactEmailChangeFilter: Only finds contacts whose email changed
+- ContactEmailVerification: Only manages email verification status
 - ContactTriggerFacade: Only orchestrates, no implementation details
 - ContactTrigger: Only delegates to facade
 
@@ -47,19 +47,15 @@ The trigger framework uses a facade to orchestrate business logic classes, ensur
 - New business logic can be added by creating new classes and calling them from facade
 - Existing classes don't need modification
 
-**Dependency Inversion Principle**
-- Facade depends on abstractions (business logic classes)
-- Business logic classes can be swapped or modified independently
-
 ## Example: Email Verification on Contact Update
 
 When a Contact's email address changes:
 
 1. **ContactTrigger** fires on `BEFORE_UPDATE`
-2. **ContactTriggerFacade.onBeforeUpdate()** calls `ContactEmailVerification.sendVerificationEmail()`
-3. **ContactEmailVerification** calls `ContactDataNormalizer.getContactsWithEmailChanges()`
-4. **ContactDataNormalizer** filters to only contacts with email changes
-5. **ContactEmailVerification** processes verification for filtered contacts (stub sets `Email_Verified__c = false`)
+2. **ContactTriggerFacade.onBeforeUpdate()** calls `ContactEmailVerification.resetVerificationForChangedEmails()`
+3. **ContactEmailVerification** calls `ContactEmailChangeFilter.getContactsWithEmailChanges()`
+4. **ContactEmailChangeFilter** returns only the contacts whose email changed
+5. **ContactEmailVerification** sets `Email_Verified__c = false` on each of them
 
 ## File Structure
 
@@ -71,8 +67,8 @@ Trigger-Example/
 └── classes/
     ├── ContactTriggerFacade.cls
     ├── ContactTriggerFacade.cls-meta.xml
-    ├── ContactDataNormalizer.cls
-    ├── ContactDataNormalizer.cls-meta.xml
+    ├── ContactEmailChangeFilter.cls
+    ├── ContactEmailChangeFilter.cls-meta.xml
     ├── ContactEmailVerification.cls
     └── ContactEmailVerification.cls-meta.xml
 ```
@@ -87,4 +83,4 @@ Trigger-Example/
 
 **Readability** - Clear separation of concerns makes code easier to understand
 
-**SOLID compliance** - Follows all SOLID principles for clean architecture
+**SOLID compliance** - Follows the Single Responsibility and Open/Closed principles

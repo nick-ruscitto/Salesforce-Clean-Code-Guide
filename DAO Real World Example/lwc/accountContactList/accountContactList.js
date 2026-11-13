@@ -1,5 +1,5 @@
 import { LightningElement, api, wire } from 'lwc';
-import getContactsByAccountId from '@salesforce/apex/ContactService.getContactsByAccountId';
+import getContactsByAccountId from '@salesforce/apex/ContactController.getContactsByAccountId';
 
 export default class AccountContactList extends LightningElement {
 	@api accountId;
@@ -26,19 +26,17 @@ export default class AccountContactList extends LightningElement {
 		return this.contacts ? this.contacts.length : 0;
 	}
 
-	handleNewContact() {
+	openNewContactForm() {
 		this.showNewContactForm = true;
 	}
 
-	handleContactSaved() {
+	closeFormAndAnnounceNewContact() {
 		this.showNewContactForm = false;
 		this.refreshContacts();
-
-		// Notify parent that contact was created
 		this.dispatchEvent(new CustomEvent('contactcreated'));
 	}
 
-	handleCancelNewContact() {
+	closeNewContactForm() {
 		this.showNewContactForm = false;
 	}
 

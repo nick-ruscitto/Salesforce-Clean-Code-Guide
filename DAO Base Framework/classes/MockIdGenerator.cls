@@ -9,7 +9,9 @@ public with sharing class MockIdGenerator {
 
 	public MockIdGenerator(SObjectType type) {
 		String objectName = String.valueOf(type);
-		if (!counts.containsKey(objectName)) counts.put(objectName, 0);
+		if (!counts.containsKey(objectName)) {
+			counts.put(objectName, 0);
+		}
 
 		this.mockType = type;
 	}
@@ -29,7 +31,9 @@ public with sharing class MockIdGenerator {
 
 	public static Id getMockId(SObjectType type) {
 		String objectName = String.valueOf(type);
-		if (!counts.containsKey(objectName)) counts.put(objectName, 0);
+		if (!counts.containsKey(objectName)) {
+			counts.put(objectName, 0);
+		}
 
 		Integer currentCount = counts.get(objectName);
 		counts.put(objectName, ++currentCount);

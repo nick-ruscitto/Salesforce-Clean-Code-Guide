@@ -76,7 +76,7 @@ Complete working example of the DAO pattern in a realistic scenario: an Account 
 
 **Architecture:**
 - **Data Layer**: AccountDAO, ContactDAO with implementations and mocks
-- **Service Layer**: AccountService (read), ContactService (read), ContactFormService (write)
+- **Controller Layer**: AccountController (read), ContactController (read), ContactFormController (write)
 - **Presentation Layer**: LWC components for displaying and managing data
 - **Test Layer**: Comprehensive unit tests using mocks
 
@@ -88,7 +88,7 @@ Complete working example of the DAO pattern in a realistic scenario: an Account 
 
 **Demonstrates:**
 - SOLID principles in action
-- Separation of concerns (read vs write services)
+- Separation of concerns (read vs write controllers)
 - Mock-based unit testing without database dependencies
 - Component communication patterns
 - Full CRUD cycle with proper abstraction
@@ -107,8 +107,8 @@ Example trigger implementation using the Facade design pattern with SOLID princi
 **Components:**
 - `ContactTrigger` - Main trigger with switch on `operationType`
 - `ContactTriggerFacade` - Coordinates handler execution
-- `ContactDataNormalizer` - Filters and identifies data changes
-- `ContactEmailVerification` - Handles email verification process
+- `ContactEmailChangeFilter` - Finds contacts whose email changed
+- `ContactEmailVerification` - Marks changed emails as unverified
 
 **Demonstrates:**
 - Facade pattern for trigger organization
@@ -140,7 +140,7 @@ This guide emphasizes SOLID principles throughout:
 
 ### Code Organization
 
-- MVC pattern: Model (DAOs), View (LWC/Aura), Controller (Services)
+- MVC pattern: Model (DAOs), View (LWC/Aura), Controller (Controllers)
 - Separate read and write operations
 - Keep classes small and focused
 - Use dependency injection for testability
@@ -175,7 +175,7 @@ Salesforce Clean Code Guide/
 │       └── MockSObjectBuilder.cls
 ├── DAO Real World Example/
 │   ├── README.md
-│   ├── classes/ (Services, DAOs, Tests)
+│   ├── classes/ (Controllers, DAOs, Tests)
 │   └── lwc/ (Components)
 └── Trigger Facade Example/
     ├── README.md

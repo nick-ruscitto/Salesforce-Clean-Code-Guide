@@ -1,5 +1,5 @@
 import { LightningElement, api, wire } from 'lwc';
-import getAccountById from '@salesforce/apex/AccountService.getAccountById';
+import getAccountById from '@salesforce/apex/AccountController.getAccountById';
 
 export default class AccountContainer extends LightningElement {
 	@api recordId;
@@ -17,8 +17,7 @@ export default class AccountContainer extends LightningElement {
 		}
 	}
 
-	handleContactCreated(event) {
-		// Refresh contact list by dispatching event to child
+	refreshContactList() {
 		const contactList = this.template.querySelector('c-account-contact-list');
 		if (contactList) {
 			contactList.refreshContacts();

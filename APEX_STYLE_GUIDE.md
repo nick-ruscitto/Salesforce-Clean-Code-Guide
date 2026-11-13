@@ -57,7 +57,11 @@ The method name of the second example not only allows us to quickly determine th
 * Do not be afraid of renaming if you think of a better, more descriptive one in the future (modern editors make this renaming a trivial task)
 
 ###### Avoid Disinformation
- 
+A name must not suggest something the code does not do.
+
+* Do not call a collection `accountList` unless it is a `List`. `accounts` says enough.
+* A method named `sendVerificationEmail` must send an email. If it only marks a field, name it for that.
+* Avoid names that differ only slightly, such as `ContactEmailValidator` and `ContactEmailValidation`.
 
 ###### Make Meaningful Distinctions
 
@@ -98,20 +102,20 @@ Pick and use one word for an abstract concept and stick with it.  For example, w
 * Should have noun or noun phrase names like User, Customer, AddressParser
 * DO NOT use words like Manager, Processor, Data or Info, they do not add anything to describing the purpose of the class
 * Avoid using design pattern names like Wrapper. A wrapper class could be called SelectableAccount instead of AccountWrapper
+	* The exceptions are the suffixes this guide defines below, and the `DataAccessor`, `DAO`, and `TriggerFacade` names of the [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) and the trigger facade
 * Only use alpha characters
 
-**Controller classes should end with the word _Controller_**
+**Classes with `@AuraEnabled` methods should end with the word _Controller_**
 
 **Web Service classes should end with the word _Service_**
 
-**Aura enabled Controller classes should end with _AuraService_**
-
 **Trigger classes should be named the object they are triggers for, and should end with _Trigger_**
 
-**Test classes should be named the same as the class they are testing, except with _Tests_ at the end**
+**Test classes should be named the same as the class they are testing, with _Test_ at the end**
 
 #### Naming Interfaces
 * Follow the same rules as classes, except put _Interface_ at the end
+* Data access interfaces in the [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) end with _DAO_ instead, such as `AccountDAO`
 
 #### Naming Variables
 > You should name a variable using the same care with which you name a first-born child - _Robert C. Martin_
@@ -316,6 +320,19 @@ List<Person__c> peopleNamedGob = [SELECT Id
 // This is very hard to read, and too long, nobody wants to have to scroll to read the entire query
 List<Person__c> peopleNamedGob = [SELECT Id, FirstName__c, LastName__c, FavoriteColor__c FROM Person__c WHERE FirstName__c = 'Gob' AND LastName__c = 'Bluth'];
 ```
+
+Fields may instead go one per line with the comma after each field, as long as the query stays easy to read. Use one style within a file.
+```sql
+List<Person__c> peopleNamedGob = [
+	SELECT Id,
+		FirstName__c,
+		LastName__c,
+		FavoriteColor__c
+	FROM Person__c
+	WHERE FirstName__c = 'Gob'
+		AND LastName__c = 'Bluth'
+];
+```
 [Back to Contents](#markdown-header-contents)
 
 ## Comments
@@ -424,6 +441,19 @@ You should not throw standard exceptions up to the user. Create a custom excepti
 
 Exceptions for visualforce controllers should be caught, then added to the PageMessages.
 
-Exceptions for AuraServices should return an AuraHandledException with a friendly error message.
+Exceptions thrown from `@AuraEnabled` methods should be an `AuraHandledException` with a friendly error message. Set the message with `setMessage` as well as the constructor, so that `getMessage()` returns it in unit tests. Build these exceptions in one place:
+```java
+public with sharing class UserFacingError {
+
+	public static AuraHandledException withMessage(String message) {
+		AuraHandledException error = new AuraHandledException(message);
+		error.setMessage(message);
+		return error;
+	}
+}
+```
+```java
+throw UserFacingError.withMessage('Account ID is required');
+```
 
 [Back to Contents](#markdown-header-contents)

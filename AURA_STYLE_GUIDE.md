@@ -322,7 +322,7 @@ Your future replacement developers will thank you when they can run the aura doc
 
 ## Apex Controllers
 
-Name your apex controllers with "AuraService" at the end so we can distinguish them from other controllers.
+Name your apex controllers with "Controller" at the end.
 
 Apex controllers for lightning should be treated more like a REST endpoint than a traditional controller.  
 

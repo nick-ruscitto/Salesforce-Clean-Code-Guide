@@ -18,13 +18,13 @@
 			<lightning-input
 				label="First Name"
 				value={firstName}
-				onchange={handleFirstNameChange}
+				onchange={updateFirstName}
 			></lightning-input>
 
 			<lightning-input
 				label="Last Name"
 				value={lastName}
-				onchange={handleLastNameChange}
+				onchange={updateLastName}
 				required
 			></lightning-input>
 
@@ -32,19 +32,19 @@
 				label="Email"
 				type="email"
 				value={email}
-				onchange={handleEmailChange}
+				onchange={updateEmail}
 			></lightning-input>
 
 			<div class="slds-m-top_medium">
 				<lightning-button
 					variant="brand"
 					label="Save Contact"
-					onclick={handleSave}
+					onclick={saveContact}
 					disabled={isSaving}
 				></lightning-button>
 				<lightning-button
 					label="Cancel"
-					onclick={handleCancel}
+					onclick={cancelNewContact}
 					disabled={isSaving}
 					class="slds-m-left_small"
 				></lightning-button>

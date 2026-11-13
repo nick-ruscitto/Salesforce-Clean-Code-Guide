@@ -5,7 +5,7 @@ public with sharing class ContactTriggerFacade {
 	}
 
 	public static void onBeforeUpdate(List<Contact> newContacts, Map<Id, Contact> oldContactsMap) {
-		ContactEmailVerification.sendVerificationEmail(newContacts, oldContactsMap);
+		ContactEmailVerification.resetVerificationForChangedEmails(newContacts, oldContactsMap);
 	}
 
 	public static void onAfterInsert(List<Contact> newContacts) {

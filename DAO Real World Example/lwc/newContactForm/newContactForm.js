@@ -1,5 +1,5 @@
 import { LightningElement, api } from 'lwc';
-import createContact from '@salesforce/apex/ContactFormService.createContact';
+import createContact from '@salesforce/apex/ContactFormController.createContact';
 
 export default class NewContactForm extends LightningElement {
 	@api accountId;
@@ -10,17 +10,17 @@ export default class NewContactForm extends LightningElement {
 	successMessage = '';
 	errorMessage = '';
 
-	handleFirstNameChange(event) {
+	updateFirstName(event) {
 		this.firstName = event.target.value;
 		this.clearMessages();
 	}
 
-	handleLastNameChange(event) {
+	updateLastName(event) {
 		this.lastName = event.target.value;
 		this.clearMessages();
 	}
 
-	handleEmailChange(event) {
+	updateEmail(event) {
 		this.email = event.target.value;
 		this.clearMessages();
 	}
@@ -30,8 +30,7 @@ export default class NewContactForm extends LightningElement {
 		this.errorMessage = '';
 	}
 
-	handleSave() {
-		// Client-side validation
+	saveContact() {
 		if (!this.lastName) {
 			this.errorMessage = 'Last Name is required';
 			return;
@@ -45,15 +44,17 @@ export default class NewContactForm extends LightningElement {
 		this.clearMessages();
 
 		createContact({
-			firstName: this.firstName,
-			lastName: this.lastName,
-			email: this.email,
-			accountId: this.accountId
+			newContact: {
+				sobjectType: 'Contact',
+				FirstName: this.firstName,
+				LastName: this.lastName,
+				Email: this.email,
+				AccountId: this.accountId
+			}
 		})
 			.then((contactId) => {
 				this.successMessage = `Contact created successfully! ID: ${contactId}`;
 				this.resetForm();
-				// Fire event to notify parent
 				this.dispatchEvent(new CustomEvent('contactsaved', {
 					detail: { contactId }
 				}));
@@ -66,9 +67,8 @@ export default class NewContactForm extends LightningElement {
 			});
 	}
 
-	handleCancel() {
+	cancelNewContact() {
 		this.resetForm();
-		// Fire event to notify parent
 		this.dispatchEvent(new CustomEvent('cancel'));
 	}
 
