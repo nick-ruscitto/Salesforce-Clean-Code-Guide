@@ -25,6 +25,15 @@ There are a few different strategies for writing unit tests. One popular strateg
 2. Write only enough of a test to demonstrate a failure
 3. Write only enough production code to pass the test
 
+#### TDD in Salesforce
+Apex compiles and runs on the server, so every test run is a deploy followed by a run in the org. Apply TDD in units rather than single lines:
+
+1. Write the test for a unit together with the unit it tests
+2. Deploy them together and run the test
+3. Make the test pass before moving on to the next unit
+
+Mock the database with the [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) so that each run stays fast.
+
 ## F.I.R.S.T
 
 Clean tests follow five rules that form the above acronym:
@@ -39,7 +48,7 @@ tests in the production environment, in the QA environment, and on your laptop w
 
 **Self-Validating:** The tests should have a boolean output. Either they pass or fail. You should not have to read through a log file to tell whether the tests pass. You should not have to manually compare two different text files to see whether the tests pass. If the tests aren't self-validating, then failure can become subjective and running the tests can require a long manual evaluation.
 
-**Timely:** The tests need to be written in a timely fashion. Unit tests should be written just before the production code that makes them pass. If you write tests after the production code, then you may find the production code to be hard to test. You may decide that some production code is too hard to test. You may not design the production code to be testable.
+**Timely:** The tests need to be written in a timely fashion. Write each unit test together with the production code it tests, and deploy them together. If you write tests after the production code, then you may find the production code to be hard to test. You may decide that some production code is too hard to test. You may not design the production code to be testable.
 
 **What a test should do:**
 
@@ -215,7 +224,7 @@ public class PromptTemplateInvokerMock implements PromptTemplateInvokerInterface
 - Tests should handle negative as well as positive cases if applicable
 - Mocking should be used to decouple tests from databases
 - Database interaction should still happen with unit tests related to DAs so that full functionality is still covered
-- TDD can be used to write better tests and production code
+- Write tests along with the code they test, and deploy them together
 
 
 

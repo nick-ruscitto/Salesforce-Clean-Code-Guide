@@ -155,6 +155,7 @@ This guide emphasizes SOLID principles throughout:
 ### Testing Philosophy
 
 - Unit tests are as important as production code
+- Write tests along with the code they test
 - Test behavior, not implementation
 - Use mocks to isolate units under test
 - Avoid false positives/negatives
