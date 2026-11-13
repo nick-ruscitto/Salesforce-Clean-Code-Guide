@@ -102,11 +102,26 @@ private DateTime generationTimestamp;
 ###### Avoid Encodings
 Encoding type or scope information into names only adds to the burden of deciphering intent.  They are a mental burden, rarely pronounceable, and easy to mistype.  Do not use type prefixes or Hungarian notation: `name`, not `nameString` or `strName`.
 
+###### Avoid Mental Mapping
+Readers should not have to translate a name into the concept it stands for.  A variable named `r` that holds the URL without the host forces every reader to remember that mapping; `urlPath` does not.
+
 ###### Don't Be Cute
 Don't try to be clever or funny with your names.  The humor will disappear very quickly when somebody is trying to quickly decipher your code in order to fix an issue.
 
 ###### Pick One Word per Concept
 Pick and use one word for an abstract concept and stick with it.  For example, what is the difference between _fetch_, _retrieve_, and _get_?
+
+###### Don't Pun
+Do not use the same word for two different ideas.  If `add` inserts a record in one class, a method that joins two strings should be named `append` or `concatenate`, not `add`.
+
+###### Use Solution Domain Names
+The people who read code are programmers, so use computer science terms, algorithm names, and pattern names when a class is that thing: `PricingPolicyFactory`, `AccountRatingQueueable`, `ContactTriggerFacade`.
+
+###### Use Problem Domain Names
+When there is no technical term for what the code does, use the name the business uses, such as `RenewalOpportunity` or `ServiceTerritory`.  A maintainer can then ask a domain expert what it means.
+
+###### Add Meaningful Context
+A name that is unclear on its own gets its context from the class or method around it.  `state` is clear inside an `Address` class; as a loose variable in a long method, `addressState` says what it is.
 
 ###### Don't Add Gratuitous Context
 * Shorter names are generally better than longer ones, as long as they are clear
@@ -120,13 +135,17 @@ Pick and use one word for an abstract concept and stick with it.  For example, w
 	* The first letter of all subsequent words should be capitalized
 * Should have noun or noun phrase names like User, Customer, AddressParser
 * DO NOT use words like Manager, Processor, Data or Info, they do not add anything to describing the purpose of the class, and often hint that the class is doing too many things
-* Avoid using design pattern names like Wrapper. A wrapper class could be called SelectableAccount instead of AccountWrapper
-	* The exceptions are the suffixes this guide defines below, and the `DataAccessor`, `DAO`, and `TriggerFacade` names of the [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) and the trigger facade
+* Avoid words that hide what a class does, such as Wrapper, Helper, or Util. A class that pairs an Account with a checkbox could be called SelectableAccount instead of AccountWrapper
+* Use a pattern name when the class is that pattern, as described in [Use Solution Domain Names](#use-solution-domain-names)
 * Only use alpha characters
 
 **Classes with `@AuraEnabled` methods should end with the word _Controller_**
 
-**Web Service classes should end with the word _Service_**
+**Classes that expose REST or SOAP web services should end with the word _Service_**
+
+**Classes that hold business logic are named for what they do, such as `AccountRating` or `CaseSummary`**
+
+Some teams instead end business logic classes with _Service_ and give web service classes another suffix, such as _RestResource_.  Either convention works when it is applied consistently.
 
 **Trigger classes should be named the object they are triggers for, and should end with _Trigger_**
 
@@ -373,7 +392,7 @@ Methods should be named well enough to not need comments.  If you need a comment
 
 The comments that do belong in code are:
 * Legal and copyright notices
-* Documentation of public interfaces that other code depends on, such as ApexDoc on a shared service or the descriptions of an invocable action
+* Documentation of public interfaces that other code depends on, such as ApexDoc on a shared business logic class or the descriptions of an invocable action
 * Warnings of consequences, such as why a class runs `without sharing`
 * `TODO` notes that reference a work item
 
@@ -701,7 +720,7 @@ Put each query in the data accessor for its object, as described in the [Data Ac
 
 #### Know which one you are writing
 * A **data structure** exposes its data and has no meaningful behavior. SObjects are data structures, and so are the `Request` and `Response` classes of an invocable action and a class that carries data to a Lightning Web Component
-* An **object** hides its data and exposes behavior through methods. Services, controllers, and data accessors are objects
+* An **object** hides its data and exposes behavior through methods. Business logic classes, controllers, and data accessors are objects
 
 Keep the two apart.  A data structure with business logic, or an object that exposes its internal state as public fields, gets the disadvantages of both: new behavior is hard to add, and so is new data.
 ```java
@@ -717,10 +736,10 @@ public class ContactSummary {
 A method talks only to its immediate collaborators: its own class, objects it creates, objects passed to it as arguments, and its own fields.  It does not reach through one object to get another and call methods on that.
 ```java
 // AVOID - reaches through three collaborators
-PaymentTerms terms = orderService.getCustomer(orderId).getBillingProfile().getPaymentTerms();
+PaymentTerms terms = orderBilling.getCustomer(orderId).getBillingProfile().getPaymentTerms();
 
 // GOOD - asks the collaborator for what it needs
-PaymentTerms terms = orderService.getPaymentTermsByOrderId(orderId);
+PaymentTerms terms = orderBilling.getPaymentTermsByOrderId(orderId);
 ```
 
 The law applies to objects, not data structures.  Reading SOQL relationship fields, such as `opportunity.Account.Owner.Email`, navigates a data structure and is fine.  Query every field the code reads, and use the safe navigation operator, `opportunity.Account?.Owner?.Email`, where a relationship may be empty.  When the same long relationship path appears in several places, query the field once in the data accessor and name it for what the code needs.
