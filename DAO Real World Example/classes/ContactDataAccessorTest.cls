@@ -29,7 +29,13 @@ private class ContactDataAccessorTest {
 
 	@isTest
 	static void getContactFromId_givenValidId_shouldReturnContact() {
-		Contact testContact = [SELECT Id FROM Contact WHERE FirstName = 'John' AND LastName = 'Doe' LIMIT 1];
+		Contact testContact = [
+			SELECT Id
+			FROM Contact
+			WHERE FirstName = 'John'
+				AND LastName = 'Doe'
+			LIMIT 1
+		];
 		ContactDataAccessor dao = new ContactDataAccessor();
 
 		Test.startTest();
@@ -44,7 +50,10 @@ private class ContactDataAccessorTest {
 
 	@isTest
 	static void getContactsFromIdSet_givenMultipleIds_shouldReturnContacts() {
-		List<Contact> testContacts = [SELECT Id FROM Contact];
+		List<Contact> testContacts = [
+			SELECT Id
+			FROM Contact
+		];
 
 		Set<Id> contactIds = new Set<Id>();
 		for (Contact c : testContacts) {
@@ -64,7 +73,12 @@ private class ContactDataAccessorTest {
 
 	@isTest
 	static void getContactsFromAccountId_givenAccountId_shouldReturnContacts() {
-		Account testAccount = [SELECT Id FROM Account WHERE Name = 'Acme Corporation' LIMIT 1];
+		Account testAccount = [
+			SELECT Id
+			FROM Account
+			WHERE Name = 'Acme Corporation'
+			LIMIT 1
+		];
 		ContactDataAccessor dao = new ContactDataAccessor();
 
 		Test.startTest();

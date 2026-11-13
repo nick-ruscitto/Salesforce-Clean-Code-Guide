@@ -38,7 +38,11 @@ private class DmlBaseTest {
 		Test.stopTest();
 
 		Assert.isNotNull(testAccount.Id);
-		Account updatedAccount = [SELECT AccountNumber FROM Account WHERE Id = :testAccount.Id];
+		Account updatedAccount = [
+			SELECT AccountNumber
+			FROM Account
+			WHERE Id = :testAccount.Id
+		];
 
 		Assert.areNotEqual(oldAccountNumber, updatedAccount.AccountNumber);
 		Assert.areEqual(newAccountNumber, updatedAccount.AccountNumber);
@@ -66,7 +70,10 @@ private class DmlBaseTest {
 			stub.deleteRecords(new List<Account> { testAccount });
 		Test.stopTest();
 
-		List<Account> accountList = [SELECT Id FROM Account];
-		Assert.isTrue(accountList.isEmpty());
+		List<Account> remainingAccounts = [
+			SELECT Id
+			FROM Account
+		];
+		Assert.isTrue(remainingAccounts.isEmpty());
 	}
 }

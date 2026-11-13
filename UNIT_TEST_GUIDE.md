@@ -61,7 +61,12 @@ more frequently result in clean production code. Take the following code example
 
 ```java
 public void changeAccountOwnership(String accountId) {
-	Account a = [SELECT Id, OwnerId FROM Account WHERE Id =: accountId];
+	Account a = [
+		SELECT Id
+			, OwnerId
+		FROM Account
+		WHERE Id = :accountId
+	];
 	a.OwnerId = UserInfo.getUserId();
 	update a;
 }
@@ -92,7 +97,12 @@ Many tests for this would look something like:
 			AccountController.changeAccountOwnership(a.Id);
 		Test.stopTest();
 
-		Account queriedAccount = [SELECT Id, OwnerId FROM Account WHERE Id =:a.Id];
+		Account queriedAccount = [
+			SELECT Id
+				, OwnerId
+			FROM Account
+			WHERE Id = :a.Id
+		];
 		Assert.areEqual(u.Id, queriedAccount.OwnerId);
 	}
 }
@@ -179,7 +189,14 @@ Test.startTest();
 	System.enqueueJob(new AccountRatingQueueable(accountIds));
 Test.stopTest();
 
-Assert.areEqual('Hot', [SELECT Rating FROM Account WHERE Id IN :accountIds LIMIT 1].Rating);
+Account ratedAccount = [
+	SELECT Id
+		, Rating
+	FROM Account
+	WHERE Id IN :accountIds
+	LIMIT 1
+];
+Assert.areEqual('Hot', ratedAccount.Rating);
 ```
 
 **Callouts:** Unit tests cannot make callouts. Register a mock that returns a fixed response.

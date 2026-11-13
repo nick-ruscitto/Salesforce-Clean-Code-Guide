@@ -255,9 +255,9 @@ When an expression will not fit on a single line, break it according to these ge
 * Indent at least once after the break
 ```java
 // GOOD
-someReallyReallyLongName = someOtherLongVariableName 
-							* (someLongName + someOtherVariable - thirdLongVariable) 
-							+ 4 * someBigMultiplier;
+someReallyReallyLongName = someOtherLongVariableName
+	* (someLongName + someOtherVariable - thirdLongVariable)
+	+ 4 * someBigMultiplier;
 
 // BAD
 // Too Long
@@ -320,33 +320,33 @@ for (Integer i = 0; i < 20; i++) {
 ##### SOQL
 Your SOQL queries should adhere to the following rules:
 * Keywords are all capital letters, `SELECT`, `FROM`, `WHERE`
-* One field per line with the comma after the field, first field goes after the initial `SELECT`, all other fields go on the new line indented to start of the first field
-* Any `AND` keywords get an indent
+* The opening bracket ends the line, the query starts on the next line indented once, and the closing bracket goes on its own line
+* One field per line, with the comma before each field after the first. The first field goes after `SELECT`, and each following field goes on a new line indented one level past `SELECT`
+* `FROM`, `WHERE`, `ORDER BY`, and `LIMIT` line up with `SELECT`
+* Any `AND` or `OR` keywords get an indent
 * Sub-selects get indented one level
 ```sql
 // Good, easy to read, easy to modify
-List<Person__c> peopleNamedGob = [SELECT Id
-									, FirstName__c
-									, LastName__c
-									, FavoriteColor__c
-								FROM Person__c
-								WHERE FirstName__c = 'Gob'
-									AND LastName__c = 'Bluth'];
+List<Person__c> peopleNamedGob = [
+	SELECT Id
+		, FirstName__c
+		, LastName__c
+		, FavoriteColor__c
+	FROM Person__c
+	WHERE FirstName__c = 'Gob'
+		AND LastName__c = 'Bluth'
+];
 
 // This is very hard to read, and too long, nobody wants to have to scroll to read the entire query
 List<Person__c> peopleNamedGob = [SELECT Id, FirstName__c, LastName__c, FavoriteColor__c FROM Person__c WHERE FirstName__c = 'Gob' AND LastName__c = 'Bluth'];
 ```
 
-Fields may instead go one per line with the comma after each field, as long as the query stays easy to read. Use one style within a file.
+A short list of fields may stay on the `SELECT` line as long as it is easy to read. When the line gets too long, continue the list on a new line indented one level past `SELECT`.
 ```sql
 List<Person__c> peopleNamedGob = [
-	SELECT Id,
-		FirstName__c,
-		LastName__c,
-		FavoriteColor__c
+	SELECT Id, FirstName__c, LastName__c
 	FROM Person__c
 	WHERE FirstName__c = 'Gob'
-		AND LastName__c = 'Bluth'
 ];
 ```
 [Back to Contents](#contents)
@@ -566,7 +566,12 @@ public static void updateAccount(Id accountId) {
 ```java
 // Avoid
 public void manipulateAccount(Id accountId) {
-	Account userAccount = [SELECT Id, Name FROM Account WHERE Id = :accountId];
+	Account userAccount = [
+		SELECT Id
+			, Name
+		FROM Account
+		WHERE Id = :accountId
+	];
 
 	// some if statements and a little object manipulation stuff
 
@@ -651,8 +656,8 @@ Validation rule messages show next to the field they concern whenever there is o
 When an operation must respect the running user's object and field permissions, run it in user mode.
 ```java
 List<Account> accounts = [
-	SELECT Id,
-		Name
+	SELECT Id
+		, Name
 	FROM Account
 	WHERE Id IN :accountIds
 	WITH USER_MODE

@@ -35,7 +35,12 @@ Look at the example below and how it violates this principle.
 ```java
 public class AccountController {
 	public void changeAccountOwnership(String accountId) {
-		Account account = [SELECT Id, OwnerId FROM Account WHERE Id = :accountId];
+		Account account = [
+			SELECT Id
+				, OwnerId
+			FROM Account
+			WHERE Id = :accountId
+		];
 		account.OwnerId = UserInfo.getUserId();
 		update account;
 	}

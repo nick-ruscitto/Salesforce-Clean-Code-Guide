@@ -2,7 +2,11 @@ public inherited sharing class ContactDataAccessor extends DmlBase implements Co
 
 	public Contact getContactFromId(Id contactId) {
 		Contact c = [
-			SELECT Id, FirstName, LastName, Email, AccountId
+			SELECT Id
+				, FirstName
+				, LastName
+				, Email
+				, AccountId
 			FROM Contact
 			WHERE Id = :contactId
 			LIMIT 1
@@ -13,7 +17,11 @@ public inherited sharing class ContactDataAccessor extends DmlBase implements Co
 
 	public List<Contact> getContactsFromIdSet(Set<Id> contactIds) {
 		return [
-			SELECT Id, FirstName, LastName, Email, AccountId
+			SELECT Id
+				, FirstName
+				, LastName
+				, Email
+				, AccountId
 			FROM Contact
 			WHERE Id IN :contactIds
 		];
@@ -21,7 +29,11 @@ public inherited sharing class ContactDataAccessor extends DmlBase implements Co
 
 	public List<Contact> getContactsFromAccountId(Id accountId) {
 		return [
-			SELECT Id, FirstName, LastName, Email, AccountId
+			SELECT Id
+				, FirstName
+				, LastName
+				, Email
+				, AccountId
 			FROM Contact
 			WHERE AccountId = :accountId
 		];

@@ -16,7 +16,12 @@ private class AccountDataAccessorTest {
 
 	@isTest
 	static void getAccountFromId_givenValidId_shouldReturnAccount() {
-		Account testAccount = [SELECT Id FROM Account WHERE Name = 'Acme Corporation' LIMIT 1];
+		Account testAccount = [
+			SELECT Id
+			FROM Account
+			WHERE Name = 'Acme Corporation'
+			LIMIT 1
+		];
 		AccountDataAccessor dao = new AccountDataAccessor();
 
 		Test.startTest();
@@ -29,7 +34,11 @@ private class AccountDataAccessorTest {
 
 	@isTest
 	static void getAccountsFromIdSet_givenMultipleIds_shouldReturnAccounts() {
-		List<Account> testAccounts = [SELECT Id, Name FROM Account];
+		List<Account> testAccounts = [
+			SELECT Id
+				, Name
+			FROM Account
+		];
 
 		Set<Id> accountIds = new Set<Id>();
 		for (Account a : testAccounts) {
