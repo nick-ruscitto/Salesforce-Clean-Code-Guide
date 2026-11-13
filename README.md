@@ -52,9 +52,11 @@ Clean design is how intent reaches both kinds of reader. Names carry most of it:
 - Test-driven development approach
 
 **[DATA_MODEL_GUIDE.md](./DATA_MODEL_GUIDE.md)**
+- Object design and normalization
 - Naming objects, fields, relationships, and picklists
-- Validation rules
-- Descriptions and help text
+- Choosing field types
+- Validation rules, descriptions, and help text
+- Designing for scale
 
 **[AGENTFORCE_GUIDE.md](./AGENTFORCE_GUIDE.md)**
 - Designing and naming for AI agents
