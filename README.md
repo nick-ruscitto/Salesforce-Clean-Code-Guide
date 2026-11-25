@@ -72,6 +72,12 @@ Clean design is how intent reaches both kinds of reader. Names carry most of it:
 - Interface Segregation Principle (ISP)
 - Dependency Inversion Principle (DIP)
 
+**[EVENT_DRIVEN_ARCHITECTURE_GUIDE.md](./EVENT_DRIVEN_ARCHITECTURE_GUIDE.md)**
+- When to use events, and when to call a class directly
+- Designing, publishing, and subscribing to platform events
+- Change data capture
+- Testing events
+
 **[AGENTFORCE_GUIDE.md](./AGENTFORCE_GUIDE.md)**
 - Designing and naming for AI agents
 - Agent Script
@@ -190,6 +196,7 @@ This guide emphasizes SOLID principles throughout:
 
 - MVC pattern: Model (data accessors), View (Lightning Web Components), Controller (Apex controllers)
 - Component-driven user interfaces: small components with public contracts, data passed down and events sent up
+- Event-driven integration: publish facts as events where producers and consumers should not depend on each other
 - Keep classes small and focused
 - Use dependency injection for testability
 - Favor composition over inheritance
@@ -223,6 +230,7 @@ Salesforce Clean Code Guide/
 ├── DATA_MODEL_GUIDE.md
 ├── DESIGN_PATTERNS_GUIDE.md
 ├── SOLID_GUIDE.md
+├── EVENT_DRIVEN_ARCHITECTURE_GUIDE.md
 ├── AGENTFORCE_GUIDE.md
 ├── DAO Base Framework/
 │   └── classes/

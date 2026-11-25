@@ -295,7 +295,7 @@ Assert.areEqual('Hot', ratedAccount.Rating);
 Test.setMock(HttpCalloutMock.class, new WeatherServiceCalloutMock());
 ```
 
-**Platform events:** Published events are delivered when `Test.stopTest()` is called, or immediately with `Test.getEventBus().deliver()`.
+**Platform events:** Published events are delivered when `Test.stopTest()` is called, or immediately with `Test.getEventBus().deliver()`. See [Testing Events](./EVENT_DRIVEN_ARCHITECTURE_GUIDE.md#testing-events).
 
 **Invocable actions:** Call the invocable method directly with a list of requests, and assert on the list of responses.
 

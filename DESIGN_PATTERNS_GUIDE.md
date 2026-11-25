@@ -182,6 +182,6 @@ public with sharing class BillingSystemClient implements BillingSystemInterface 
 }
 ```
 
-The rest of the code depends on `BillingSystemInterface`, and unit tests replace it with a mock. The [Apex Style Guide](./APEX_STYLE_GUIDE.md#wrap-what-you-do-not-own) shows the full client, and the [Agentforce Guide](./AGENTFORCE_GUIDE.md#invoke-templates-through-an-interface) applies the same pattern to prompt templates. The data accessors of the [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) are adapters for the database.
+The rest of the code depends on `BillingSystemInterface`, and unit tests replace it with a mock. The [Apex Style Guide](./APEX_STYLE_GUIDE.md#wrap-what-you-do-not-own) shows the full client, and the [Agentforce Guide](./AGENTFORCE_GUIDE.md#invoke-templates-through-an-interface) applies the same pattern to prompt templates. The data accessors of the [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) are adapters for the database, and the [Event-Driven Architecture Guide](./EVENT_DRIVEN_ARCHITECTURE_GUIDE.md#publish-through-an-adapter) wraps the event bus the same way.
 
 [Back to Contents](#contents)
