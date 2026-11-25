@@ -170,6 +170,8 @@ private static final Integer MAX_RETRIES = 4;
 }
 ```
 
+`ErrorLog.record` stands in for whatever error logging solution the org uses.
+
 #### Resume after the last event processed
 When a batch fails partway through, events that were already processed should not be processed again. Set a checkpoint after each event, and the trigger resumes after it.
 
