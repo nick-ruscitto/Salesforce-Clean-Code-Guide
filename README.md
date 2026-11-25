@@ -6,7 +6,7 @@ A comprehensive guide to writing clean, maintainable, and testable Salesforce co
 
 This guide applies the principles of *Clean Code: A Handbook of Agile Software Craftsmanship* by Robert C. Martin to Salesforce development. It turns them into coding standards, architectural patterns, and working examples for Apex, Lightning Web Components, Aura components, the data model, Agentforce, and testing.
 
-Each principle is explained where it is used. The book explains them in full, and is worth reading alongside this guide.
+Each principle is explained where it is used. The book explains them in full, and is worth reading alongside this guide. The Legacy Code Guide does the same for *Working Effectively with Legacy Code* by Michael C. Feathers.
 
 ## Written for People and AI Agents
 
@@ -77,6 +77,12 @@ Clean design is how intent reaches both kinds of reader. Names carry most of it:
 - Designing, publishing, and subscribing to platform events
 - Change data capture
 - Testing events
+
+**[LEGACY_CODE_GUIDE.md](./LEGACY_CODE_GUIDE.md)**
+- Changing code that has no tests, safely and a little at a time
+- Characterization tests and seams in Apex
+- Breaking dependencies, sprouting, and wrapping
+- Moving a trigger to a facade one event at a time
 
 **[AGENTFORCE_GUIDE.md](./AGENTFORCE_GUIDE.md)**
 - Designing and naming for AI agents
@@ -197,6 +203,7 @@ This guide emphasizes SOLID principles throughout:
 - MVC pattern: Model (data accessors), View (Lightning Web Components), Controller (Apex controllers)
 - Component-driven user interfaces: small components with public contracts, data passed down and events sent up
 - Event-driven integration: publish facts as events where producers and consumers should not depend on each other
+- Legacy code: cover existing code with tests before changing it, and add new behavior as new, tested code
 - Keep classes small and focused
 - Use dependency injection for testability
 - Favor composition over inheritance
@@ -231,6 +238,7 @@ Salesforce Clean Code Guide/
 ├── DESIGN_PATTERNS_GUIDE.md
 ├── SOLID_GUIDE.md
 ├── EVENT_DRIVEN_ARCHITECTURE_GUIDE.md
+├── LEGACY_CODE_GUIDE.md
 ├── AGENTFORCE_GUIDE.md
 ├── DAO Base Framework/
 │   └── classes/

@@ -211,6 +211,8 @@ A **unit test** checks one unit of logic in isolation. Its dependencies are repl
 
 An **integration test** checks that code works with the real thing on the other side of a boundary. It uses real records and real platform behavior, so it is slower and can fail because of changes outside the code under test.
 
+To bring existing code that has no tests under test before changing it, see the [Legacy Code Guide](./LEGACY_CODE_GUIDE.md).
+
 #### Test logic with unit tests
 Use a unit test for anything whose behavior the code decides:
 * Branches, calculations, and decisions
