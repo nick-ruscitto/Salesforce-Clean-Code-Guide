@@ -26,6 +26,7 @@ Clean design is how intent reaches both kinds of reader. Names carry most of it:
 
 **[LWC_STYLE_GUIDE.md](./LWC_STYLE_GUIDE.md)**
 - Lightning Web Component best practices
+- Component-driven architecture
 - Component composition and properties
 - Event handling patterns
 - Component styling guidelines
@@ -188,6 +189,7 @@ This guide emphasizes SOLID principles throughout:
 ### Code Organization
 
 - MVC pattern: Model (data accessors), View (Lightning Web Components), Controller (Apex controllers)
+- Component-driven user interfaces: small components with public contracts, data passed down and events sent up
 - Keep classes small and focused
 - Use dependency injection for testability
 - Favor composition over inheritance

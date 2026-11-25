@@ -6,6 +6,7 @@
 1. [When To Use LWCs](#when-to-use-lwcs)
 1. [Basic Rules](#basic-rules)
 1. [Component Properties](#component-properties)
+1. [Component-Driven Architecture](#component-driven-architecture)
 1. [Component Composition](#component-composition)
 1. [Calling Apex](#calling-apex)
 1. [Events](#events)
@@ -176,6 +177,64 @@ export default class GoodExampleComponent extends LightningElement {
     @api name = DEFAULT_NAME;
 }
 ```
+
+## Component-Driven Architecture
+
+A page is built from small components, each with one responsibility and a public contract, and composed from the bottom up. Each component can be understood, tested, and reused on its own, without the page around it.
+
+-   **Do** treat a component's `@api` properties, its `@api` methods, and the events it dispatches as its public contract
+
+> Why? Everything else in the component is private and can change freely. A parent that depends only on the contract keeps working when the child's internals change.
+
+-   **Do** pass data down through properties and send changes up through events
+
+> Why? A child that reaches into its parent, or into a sibling, depends on markup it does not own. When data flows one way and events flow the other, a reader can follow any change from where it starts to where it lands.
+
+```html
+<!-- the parent passes data down -->
+<c-account-details account={account}></c-account-details>
+
+<!-- and listens for what the child announces -->
+<c-account-contact-list
+	account-id={recordId}
+	oncontactcreated={refreshContactList}
+></c-account-contact-list>
+```
+
+-   **Consider** separating container components from presentational components
+
+> Why? A container loads data, calls Apex, and coordinates its children. A presentational component renders what it is given and announces what the user did. Presentational components have no dependency on Apex or the page, so they are the easiest to reuse and to test with Jest: set the properties, then check the markup.
+
+```javascript
+// presentational: renders the account it is given
+export default class AccountDetails extends LightningElement {
+	@api account;
+}
+```
+
+-   **Do** call a child only through its `@api` methods, using `lwc:ref`
+
+> Why? The `@api` method is part of the child's contract. Querying into the child's markup, or setting its private fields, is not.
+
+```javascript
+refreshContactList() {
+	this.refs.contactList.refreshContacts();
+}
+```
+
+-   **Avoid** adding configuration flags to make one component serve several purposes. **Do** compose small components instead
+
+> Why? Each flag adds a path through the component that every change must account for. Two small components composed by a parent are each simpler than one component with a mode.
+
+-   **Consider** building and testing a component in isolation before placing it on a page
+
+> Why? A component that only works on one page has a hidden dependency on that page.
+
+-   **Avoid** Lightning Message Service between a parent and its child. **Do** use it only for components with no parent-child relationship, such as components in different regions of a page
+
+> Why? Properties and events make the relationship visible in the markup. A message channel hides it.
+
+The [DAO Real World Example](./DAO%20Real%20World%20Example/README.md) shows this structure: `accountContainer` loads the account and coordinates, `accountDetails` only presents it, and `accountContactList` announces a new contact with an event that the container answers by calling the list's `@api` method.
 
 ## Component Composition
 
