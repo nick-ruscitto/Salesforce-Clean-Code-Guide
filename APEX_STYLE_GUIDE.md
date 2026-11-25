@@ -518,18 +518,22 @@ public class PartnerPricingPolicy implements PricingPolicyInterface {
 	private static final Decimal VOLUME_RATE = 0.20;
 
 	public Decimal calculateDiscount(Decimal orderAmount) {
-		return orderAmount * rateFor(orderAmount);
+		return orderAmount * getRateByOrderAmount(orderAmount);
 	}
 
-	private Decimal rateFor(Decimal orderAmount) {
-		return orderAmount >= VOLUME_THRESHOLD ? VOLUME_RATE : BASE_RATE;
+	private Decimal getRateByOrderAmount(Decimal orderAmount) {
+		if (orderAmount >= VOLUME_THRESHOLD) {
+			return VOLUME_RATE;
+		}
+
+		return BASE_RATE;
 	}
 }
 ```
 
 ```java
 public class PricingPolicyFactory {
-	public static PricingPolicyInterface forAccountType(String accountType) {
+	public static PricingPolicyInterface getPricingPolicyByAccountType(String accountType) {
 		PricingPolicyInterface pricingPolicy;
 
 		switch on accountType {
@@ -637,6 +641,30 @@ public void doSomeStuff(Account userAccount) {
 ```
 
 Nested if statements should go into their own method.
+
+Use if statements rather than ternary operators.
+
+> Why? An if statement reads as prose: if this, return that. A ternary packs the same logic into symbols the reader has to translate. An if statement also puts each branch on its own line, so a branch can be debugged on its own and can grow without the statement being rewritten.
+
+When a value depends on a condition, put the choice in a well-named method. The call site says what is chosen, and the method shows how.
+```java
+// AVOID
+submittedOrder.Region__c = WEST_POSTAL_PREFIXES.contains(postalPrefix) ? 'West' : 'East';
+
+// GOOD
+private void assignRegion(Order submittedOrder) {
+	String postalPrefix = submittedOrder.ShippingPostalCode.left(2);
+	submittedOrder.Region__c = getRegionByPostalPrefix(postalPrefix);
+}
+
+private String getRegionByPostalPrefix(String postalPrefix) {
+	if (WEST_POSTAL_PREFIXES.contains(postalPrefix)) {
+		return 'West';
+	}
+
+	return 'East';
+}
+```
 
 [Back to Contents](#contents)
 

@@ -199,7 +199,7 @@ When a user names a record in words, match the name to records in steps, and rep
 ```java
 private static final Integer MIN_LOOSE_MATCH_LENGTH = 3;
 
-private static List<ProjectTask__c> matchesFor(String spokenName, List<ProjectTask__c> tasks) {
+private static List<ProjectTask__c> getMatchingTasks(String spokenName, List<ProjectTask__c> tasks) {
 	List<ProjectTask__c> exactMatches = new List<ProjectTask__c>();
 	List<ProjectTask__c> looseMatches = new List<ProjectTask__c>();
 
@@ -211,7 +211,11 @@ private static List<ProjectTask__c> matchesFor(String spokenName, List<ProjectTa
 		}
 	}
 
-	return exactMatches.isEmpty() ? looseMatches : exactMatches;
+	if (exactMatches.isEmpty()) {
+		return looseMatches;
+	}
+
+	return exactMatches;
 }
 
 private static Boolean isLooseMatch(String taskName, String spokenName) {

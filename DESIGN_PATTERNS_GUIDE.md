@@ -28,7 +28,7 @@ Creates the right implementation of an interface in one place, so the code that 
 
 ```java
 public class PricingPolicyFactory {
-	public static PricingPolicyInterface forAccountType(String accountType) {
+	public static PricingPolicyInterface getPricingPolicyByAccountType(String accountType) {
 		PricingPolicyInterface pricingPolicy;
 
 		switch on accountType {
@@ -77,7 +77,7 @@ public class StandardPricingPolicy implements PricingPolicyInterface {
 ```
 
 ```java
-PricingPolicyInterface pricingPolicy = PricingPolicyFactory.forAccountType(customerAccount.Type);
+PricingPolicyInterface pricingPolicy = PricingPolicyFactory.getPricingPolicyByAccountType(customerAccount.Type);
 Decimal discount = pricingPolicy.calculateDiscount(orderAmount);
 ```
 

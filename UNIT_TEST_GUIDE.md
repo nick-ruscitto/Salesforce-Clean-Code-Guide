@@ -60,11 +60,11 @@ Every test has three parts, in this order, separated by blank lines:
 
 ```java
 @isTest
-static void forAccountType_givenPartnerAccount_shouldReturnPartnerPricingPolicy() {
+static void getPricingPolicyByAccountType_givenPartnerAccount_shouldReturnPartnerPricingPolicy() {
 	Account partnerAccount = new Account(Name = 'Acme Corporation', Type = 'Partner');
 
 	Test.startTest();
-		PricingPolicyInterface pricingPolicy = PricingPolicyFactory.forAccountType(partnerAccount.Type);
+		PricingPolicyInterface pricingPolicy = PricingPolicyFactory.getPricingPolicyByAccountType(partnerAccount.Type);
 	Test.stopTest();
 
 	Assert.isInstanceOfType(pricingPolicy, PartnerPricingPolicy.class);
