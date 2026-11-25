@@ -221,20 +221,22 @@ private static Boolean isLooseMatch(String taskName, String spokenName) {
 ```
 
 #### Refresh open pages after a change
-When an action changes data, the components on the user's page do not know. Publish a platform event after the change, carrying the Id of the changed record. Components on the page subscribe with `lightning/empApi`, ignore events for other records, and refresh themselves. The [Event-Driven Architecture Guide](./EVENT_DRIVEN_ARCHITECTURE_GUIDE.md) covers designing, publishing, and subscribing to events.
+When an action changes data, the components on the user's page do not know. Publish a platform event after the change, carrying the Id of the changed record. Components on the page subscribe with `lightning/empApi`, ignore events for other records, and refresh themselves. The event is published through the publisher adapter from the [Event-Driven Architecture Guide](./EVENT_DRIVEN_ARCHITECTURE_GUIDE.md#publish-through-an-adapter), so the action's unit tests can replace it with a mock.
 
 ```java
-public with sharing class ProjectChangeEventPublisher {
+public with sharing class ProjectChangeAnnouncement {
 
-	public static void publishChange(Id projectId) {
-		EventBus.publish(new ProjectChangeEvent__e(EntityId__c = projectId));
+	public static EventPublisherInterface eventPublisher = new EventBusPublisher();
+
+	public static void announceChange(Id projectId) {
+		eventPublisher.publish(new List<SObject>{ new ProjectChanged__e(ProjectId__c = projectId) });
 	}
 }
 ```
 
 ```javascript
 subscribe(CHANNEL, -1, (message) => {
-	if (message.data.payload.EntityId__c === this.recordId) {
+	if (message.data.payload.ProjectId__c === this.recordId) {
 		this.loadProject();
 	}
 });
