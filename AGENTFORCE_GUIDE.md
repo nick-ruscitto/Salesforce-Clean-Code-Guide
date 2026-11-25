@@ -175,11 +175,11 @@ public with sharing class ProjectSubject {
 		this.projectId = projectId;
 	}
 
-	public static ProjectSubject forRecordId(Id recordId) {
-		return new ProjectSubject(projectIdFrom(recordId));
+	public static ProjectSubject createFromRecordId(Id recordId) {
+		return new ProjectSubject(getProjectIdByRecordId(recordId));
 	}
 
-	private static Id projectIdFrom(Id recordId) {
+	private static Id getProjectIdByRecordId(Id recordId) {
 		if (recordId.getSObjectType() == Project__c.SObjectType) {
 			return recordId;
 		}

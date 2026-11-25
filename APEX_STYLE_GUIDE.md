@@ -188,6 +188,7 @@ public String AccountName {get; set;}
 	* Verb-adj-noun (getSelectedUsers, hasSelectedItems)
 	* Verb-adj (isDeleted) Boolean returns always use present tense states of being: is, has, are, etc
 * Accessors, mutators, and predicates should be named for their value and prefixed with _get_, _set_, and _is_ 
+* Builder methods are the exception: they are named for the value they set and prefixed with _with_, such as `withType`, so a chain of calls reads as one description. See [Builder](./DESIGN_PATTERNS_GUIDE.md#builder)
 * Test methods should follow this syntax: `methodUnderTest_testCondition_expectedResult`
 ```java
 // Method under test, in the Greeter class
