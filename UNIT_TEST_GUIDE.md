@@ -220,6 +220,17 @@ Use a unit test for anything whose behavior the code decides:
 * Error paths
 * Turning one shape of data into another
 
+#### Test behavior, not implementation
+A unit is a behavior, reached through the class's public methods. Private methods are how the class does it today. Test the public methods, with inputs that take the code down each path, and every private method is covered.
+
+Do not use `@TestVisible` to call a private method from a test.
+
+* **Tests fail when nothing is broken.** Splitting, merging, or renaming a private method breaks a test that calls it, even though no caller sees a difference. Tests then work against the refactoring they should protect
+* **A private method worth testing on its own is a separate responsibility.** Move it into its own class, with a public method, and test that class
+* **A private method that the public methods cannot reach** is not used. Delete it
+
+`@TestVisible` is only for seams: a private static field that holds a dependency, so a test can replace it with a mock. The [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) makes these fields public, so it needs no annotation.
+
 #### Test boundaries with integration tests
 Use an integration test where the code depends on something only the platform does:
 * **Queries:** that SOQL returns the right records and fields. A mock cannot show that a filter is wrong

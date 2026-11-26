@@ -88,7 +88,7 @@ The seams available in Apex:
 * **An interface held in a static field:** the test assigns a mock. This is how the [Data Accessor Framework](./DATA_ACCESSOR_GUIDE.md) and the [Adapter](./DESIGN_PATTERNS_GUIDE.md#adapter) pattern work
 * **A parameter:** the test passes the records or values the method would otherwise query or build
 * **`Test.setMock`:** for HTTP callouts
-* **`@TestVisible`:** for a private static field or method that a test needs to reach
+* **`@TestVisible`:** for a private static field that holds a dependency, so a test can replace it. Not for private methods. See [Test behavior, not implementation](./UNIT_TEST_GUIDE.md#test-behavior-not-implementation)
 
 #### `Test.isRunningTest()` is not a seam
 Code that checks `Test.isRunningTest()` behaves differently in tests than in production, so the tests prove nothing about production. Replace the check with one of the seams above.
@@ -152,7 +152,7 @@ When the code calls another class directly, extract an interface from that class
 When new behavior must be added to code that has no tests, write the new behavior as new code, with tests, and call it from the old code with one line. The old code is not covered, but the new code is, and the change to the old code is small enough to check by reading.
 
 #### Sprout method
-Use when the new behavior fits in the existing class, and the class can be tested.
+Use when the new behavior fits in the existing class, and the existing public method can be tested. Test the new behavior through the public method.
 
 ```java
 public static void applyDiscounts(List<Opportunity> opportunities) {
@@ -161,7 +161,6 @@ public static void applyDiscounts(List<Opportunity> opportunities) {
 	assignApprovalRequirements(opportunities);
 }
 
-@TestVisible
 private static void assignApprovalRequirements(List<Opportunity> opportunities) {
 	for (Opportunity opportunity : opportunities) {
 		opportunity.RequiresApproval__c = opportunity.DiscountPercent__c > MAX_UNAPPROVED_DISCOUNT;
@@ -170,7 +169,7 @@ private static void assignApprovalRequirements(List<Opportunity> opportunities) 
 ```
 
 #### Sprout class
-Use when the existing class cannot be tested without breaking too many dependencies, or when the new behavior is its own responsibility. The new class follows every standard in this repository, whatever the old class looks like.
+Use when the existing public method cannot be tested without breaking too many dependencies, or when the new behavior is its own responsibility. Do not make a sprouted private method `@TestVisible` to test it directly. Sprout a class instead. The new class follows every standard in this repository, whatever the old class looks like.
 
 ```java
 public static void applyDiscounts(List<Opportunity> opportunities) {
