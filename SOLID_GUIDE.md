@@ -26,10 +26,9 @@ The SOLID abbreviation is defined as follows:
 
 
 ## Single Responsibility
-This states that *a class/method should have only one reason to change it, and this means, it should have a
-single job*.
+This states that *a class should have only one reason to change*. In other words, a class has one purpose.
 
-You may have heard the quote: *“Do one thing and do it well”*.
+A class can have many methods. Each method does one thing, and together they serve the class's one purpose. A chef's knife slices, dices and chops, but it's all cutting. This is different from the rule for methods, that a method does one thing, does it well, and does only that. See [Do one thing, with no side effects](./APEX_STYLE_GUIDE.md#do-one-thing-with-no-side-effects).
 
 Look at the example below and how it violates this principle.
 ```java
@@ -93,6 +92,8 @@ public class AccountOwnerNotification {
 
 Can you see the difference?
 By creating the Data Accessor interface we have created a class/method pairing that handles all database interactions for Accounts, and the owner email now has a class of its own.
+
+`AccountDataAccessor` gets accounts with `getAccountById` and saves them with `updateRecords`, and as the org grows it would gain more queries, such as `getAccountsByOwnerId`. Those are several methods, but one purpose: moving accounts in and out of the database. It only changes when the way accounts are stored or queried changes. Sending an email is not part of that purpose, which is why `sendOwnerEmail` moved to its own class.
 
 The advantages of SRP are as follows:
 	* It makes code as easy as possible to reuse
