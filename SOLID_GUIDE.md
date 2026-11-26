@@ -254,6 +254,91 @@ public class Penguin extends Bird {
 This is but one simple example of how to correct a violation of this principle, however, 
 this situation can manifest in a broad variety of ways, and is not always easy to identify.
 
+Here is a second example, where the violation is harder to see. In math, a square is a rectangle, so it seems natural for `Square` to extend `Rectangle`.
+```java
+public virtual class Rectangle {
+	protected Double width;
+	protected Double height;
+
+	public virtual void setWidth(Double width) {
+		this.width = width;
+	}
+
+	public virtual void setHeight(Double height) {
+		this.height = height;
+	}
+
+	public Double calculateArea() {
+		return width * height;
+	}
+}
+```
+
+```java
+public class Square extends Rectangle {
+	public override void setWidth(Double width) {
+		this.width = width;
+		this.height = width;
+	}
+
+	public override void setHeight(Double height) {
+		this.width = height;
+		this.height = height;
+	}
+}
+```
+
+Now look at code that works with a `Rectangle`.
+```java
+Rectangle shape = new Square();
+shape.setWidth(5);
+shape.setHeight(4);
+Double area = shape.calculateArea(); //expected 20, returns 16
+```
+
+Do you see the problem? `Rectangle` promises that setting the width does not change the height. `Square` breaks that promise, so code that works with a `Rectangle` gets the wrong answer when it is given a `Square`.
+
+**Being a kind of something in the real world does not make a class a safe substitute in code.**
+
+So how do we solve it? `Square` does not extend `Rectangle`. Each shape implements the same interface, and each keeps its own promises.
+```java
+public interface ShapeInterface {
+	Double calculateArea();
+}
+```
+
+```java
+public class Rectangle implements ShapeInterface {
+	private Double width;
+	private Double height;
+
+	public Rectangle(Double width, Double height) {
+		this.width = width;
+		this.height = height;
+	}
+
+	public Double calculateArea() {
+		return width * height;
+	}
+}
+```
+
+```java
+public class Square implements ShapeInterface {
+	private Double sideLength;
+
+	public Square(Double sideLength) {
+		this.sideLength = sideLength;
+	}
+
+	public Double calculateArea() {
+		return sideLength * sideLength;
+	}
+}
+```
+
+Code that works with a `ShapeInterface` now gets the right area from any shape, without knowing which shape it has. This is the same interface used in the [Dependency Inversion](#dependency-inversion) example.
+
 [Back to Contents](#contents)
 
 
