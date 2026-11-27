@@ -85,10 +85,13 @@ Clean design is how intent reaches both kinds of reader. Names carry most of it:
 - Moving a trigger to a facade one event at a time
 
 **[AGENTFORCE_GUIDE.md](./AGENTFORCE_GUIDE.md)**
-- Designing and naming for AI agents
+- Designing for AI agents: code around the AI, and starting simple
+- Naming for agents and writing instructions
 - Agent Script
 - Invocable actions and action patterns
 - Calling prompt templates from Apex and validating their output
+- Testing AI behavior
+- Security for agents and prompt templates
 
 ### Example Projects
 

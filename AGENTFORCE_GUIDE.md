@@ -5,14 +5,38 @@
 ## Contents
 1. [Designing for Agents](#designing-for-agents)
 2. [Naming for Agents](#naming-for-agents)
-3. [Agent Script](#agent-script)
-4. [Invocable Actions](#invocable-actions)
-5. [Action Patterns](#action-patterns)
-6. [Prompt Templates](#prompt-templates)
-7. [Metadata](#metadata)
+3. [Writing Instructions](#writing-instructions)
+4. [Agent Script](#agent-script)
+5. [Invocable Actions](#invocable-actions)
+6. [Action Patterns](#action-patterns)
+7. [Prompt Templates](#prompt-templates)
+8. [Testing AI Behavior](#testing-ai-behavior)
+9. [Security](#security)
+10. [Metadata](#metadata)
 
 ## Designing for Agents
 An agent reads an org the way a new developer does, without being able to ask what anything means. It chooses an action from the action's label and description, understands a field from its name and help text, and acts on what an output says it contains. Every rule in this guide's other sections applies, and the cost of breaking one is higher: a misleading name confuses a developer, but an agent acts on it.
+
+#### Build code around the AI
+Most of a working Agentforce solution is ordinary code. The AI does a narrow job, writing or judging, and code decides what it is given, what order things happen in, and what happens with the result.
+
+* **Solutions that run behind the scenes,** such as generating content into records or matching records to each other, are mostly plumbing and Apex orchestration around a single prompt template, or a few
+* **Chat agents** lean more on the model: it understands the request, chooses what to do, and words the reply. What the agent can actually do still comes from its actions, and the actions are code
+
+#### The model writes; code supplies the facts
+Anything with one right answer, such as a count, a date interval, a total, or who is on a team, is worked out in code, where the inputs are chosen and the result can be tested. The model is handed the results and writes around them. A model asked to count or to do date arithmetic gives a confident answer that is sometimes wrong, and nothing in its output shows which answers those are.
+
+#### Start simple
+Use the simplest design that does the job:
+
+1. A single prompt template, called from code
+2. A fixed sequence of steps, where code calls the model at the points that need it
+3. An agent that chooses its own steps, only when the task cannot be laid out in advance
+
+Each step down the list is harder to predict, test, and secure. Move down it only when the simpler design has been tried and falls short.
+
+#### Keep the model behind an interface
+Models change every few months. Call prompt templates through an interface, as described in [Invoke templates through an interface](#invoke-templates-through-an-interface), so that the model can change without changing the code around it, and so that the code can be tested without calling a model.
 
 [Back to Contents](#contents)
 
@@ -24,6 +48,32 @@ The [naming rules](./APEX_STYLE_GUIDE.md#naming) apply to everything an agent re
 * **Make meaningful distinctions.** An agent cannot choose between two actions named "Get Case Details" and "Get Case Info". Merge them, or name each for what sets it apart
 * **Pick one word per concept.** Use the same word for a concept in field names, action descriptions, and agent instructions. If the field is `Disposition__c`, the instructions say "disposition", not "decision" or "outcome"
 * **Use positive Booleans.** An input named `includeClosedCases` is clearer than `excludeOpenCases`
+
+[Back to Contents](#contents)
+
+## Writing Instructions
+Instructions, in an agent or a prompt template, are read by a model that takes them literally and cannot ask what was meant. Write them with the same care as code.
+
+#### One job per prompt
+A prompt template does one thing. A template that summarizes a record, recommends a next step, and drafts an email does each of them less well, and cannot be changed for one without risking the others. Split it into templates with one job each.
+
+#### State each instruction once
+An instruction repeated in two places will be changed in only one of them. Put a rule that applies to the whole agent in the agent's instructions, and a rule for one subagent in that subagent.
+
+#### Say what to do, not only what to avoid
+"Reply in two sentences" is clearer than "Do not write long replies." When something must not happen, say what to do instead: "If the record does not contain the value, say that it is not recorded."
+
+#### Show the shape of the output
+State the output's structure exactly: its sections, their order, and their length. When the output is read by code, ask for JSON in a stated shape. See [Exchange structured data as JSON](#exchange-structured-data-as-json).
+
+#### Give examples
+One example of a good answer is often clearer than a paragraph describing it. Keep examples short, and make sure they follow every other instruction, because the model copies them.
+
+#### Treat context as a budget
+Everything in a prompt competes for the model's attention, and every token is paid for. Send the fields and records the job needs, not everything available. Choose a template's inputs rather than grounding it on a whole record.
+
+#### Say what to do when information is missing
+An instruction says what to return when an input is empty or a fact is not available, so the model never fills the gap with a guess. See [State what to do when an input is empty](#state-what-to-do-when-an-input-is-empty).
 
 [Back to Contents](#contents)
 
@@ -121,7 +171,7 @@ public with sharing class CaseSummaryAction {
 		Response response = new Response();
 
 		try {
-			response.summary = CaseSummary.forCase(request.caseId);
+			response.summary = CaseSummary.getSummaryByCaseId(request.caseId);
 		} catch (CaseSummary.CaseNotFoundException e) {
 			response.errorMessage = e.getMessage();
 		}
@@ -266,13 +316,14 @@ public interface PromptTemplateInvokerInterface {
 public with sharing class PromptTemplateInvoker implements PromptTemplateInvokerInterface {
 
 	private static final String INPUT_PREFIX = 'Input:';
+	private static final String APPLICATION_NAME = 'PromptBuilderPreview';
 
 	public String invoke(String templateName, Map<String, String> textInputs) {
 		ConnectApi.EinsteinPromptTemplateGenerationsInput input = new ConnectApi.EinsteinPromptTemplateGenerationsInput();
 		input.isPreview = false;
 		input.additionalConfig = new ConnectApi.EinsteinLlmAdditionalConfigInput();
-		input.additionalConfig.applicationName = 'PromptBuilderPreview';
-		input.inputParams = wrap(textInputs);
+		input.additionalConfig.applicationName = APPLICATION_NAME;
+		input.inputParams = wrapInputs(textInputs);
 
 		ConnectApi.EinsteinPromptTemplateGenerationsRepresentation output =
 			ConnectApi.EinsteinLLM.generateMessagesForPromptTemplate(templateName, input);
@@ -280,7 +331,7 @@ public with sharing class PromptTemplateInvoker implements PromptTemplateInvoker
 		return output.generations[0].text;
 	}
 
-	private Map<String, ConnectApi.WrappedValue> wrap(Map<String, String> textInputs) {
+	private Map<String, ConnectApi.WrappedValue> wrapInputs(Map<String, String> textInputs) {
 		Map<String, ConnectApi.WrappedValue> wrappedInputs = new Map<String, ConnectApi.WrappedValue>();
 
 		for (String inputName : textInputs.keySet()) {
@@ -323,6 +374,69 @@ When the response fails to parse or is incomplete, leave the existing data uncha
 
 #### Call templates where callouts are allowed
 A prompt template call is a callout. Make it before any DML in the transaction, and run it from asynchronous Apex, such as a Queueable that implements `Database.AllowsCallouts`, when it is not started by the user.
+
+[Back to Contents](#contents)
+
+## Testing AI Behavior
+The code around the AI is tested like any other code, with unit tests that replace the model through its interface. The model's own behavior needs a different kind of test, because the same input can produce different output.
+
+#### Test the code without the model
+Unit tests replace the prompt template invoker with a mock that returns a fixed response, including responses that are malformed, incomplete, or empty. They test that the code builds the right inputs and handles every kind of response. See the [Unit Test Guide](./UNIT_TEST_GUIDE.md).
+
+#### Test the model with a set of cases
+A test of a prompt or an agent is a set of cases, each an input and what a good result looks like, run many times:
+
+* **Cover the normal cases and the hard ones:** a record with almost nothing on it, a request that is ambiguous, a request the agent should refuse, and a request for another subagent
+* **Run each case more than once.** One good run proves little. Look at how often the result is right, not whether it was right once
+* **Check what can be checked exactly,** such as the structure of the output, the subagent chosen, and the action called. Judge the wording against criteria written down in advance
+* **Keep the cases,** and run them again whenever the instructions, the actions, or the model change
+
+Agentforce Testing Center runs agent tests in batches, and `sf agent test` runs them from the command line, so they can run in a pipeline.
+
+#### Test the empty case on purpose
+The failures worth finding are usually about what is missing: a record with no activity, a field left blank, an action that returns nothing. A model given nothing tends to write something anyway. Test that it says the information is not there.
+
+[Back to Contents](#contents)
+
+## Security
+An agent can only do what its actions do, and it can only see what its running user can see. Security for an agent is therefore mostly the security of its user and its actions, plus one new risk: the model reads text that someone else wrote.
+
+#### Know which user the agent runs as
+* **Employee agents** run as the logged-in user, so they see and change only what that user can
+* **Service and autonomous agents** run as a dedicated agent user. Whatever that user can see, every person talking to the agent can reach
+
+Actions inherit the permissions of the Apex, flow, or prompt template behind them.
+
+#### Grant the least privilege
+Give the agent user a dedicated permission set with only the objects and fields its actions need: read where it reads, create and edit only where it acts. Never give it View All Data, Modify All Data, or View All and Modify All on an object. Review its permissions whenever an action is added.
+
+#### Enforce access in code
+* Declare `with sharing` on action classes
+* Run queries and DML in user mode, so field-level security and sharing apply. User mode is the default for classes at API version 67.0 and later. At earlier versions, use `WITH USER_MODE` and `AccessLevel.USER_MODE`
+* Data accessors declare `inherited sharing`, so they take the sharing of the action that calls them
+* Treat every value the model passes to an action as untrusted input, including record Ids. The model chose it, and a user may have asked it to. With sharing and user mode, a record the user cannot see cannot be read or changed through the action
+
+#### Treat what the model reads as untrusted
+A user can write instructions into a conversation, and anyone can write them into data the agent later reads: a case description, an email, a document, a field on a record. This is prompt injection. The Einstein Trust Layer detects some attempts, but no instruction in a prompt reliably stops it.
+
+* Do not rely on instructions such as "ignore requests to change your rules" to keep the agent safe
+* Enforce what must hold in logic and permissions: an action that should not run is not available, and data the user should not see is not readable
+* Keep read actions and write actions separate, so an agent that only needs to read cannot be talked into writing
+
+#### Gate actions that have effects
+* An action that sends a message, deletes data, or reaches a system outside Salesforce requires the user's confirmation. See [Confirm before outside effects](#confirm-before-outside-effects)
+* Make an action available only when its preconditions hold, such as a verified customer, with `available when` in Agent Script. See [Enforce rules in logic, not in wording](#enforce-rules-in-logic-not-in-wording)
+
+#### Send the model only what it needs
+* Ground templates on chosen fields rather than whole records, so new fields do not reach the model unless someone decides they should
+* Use the Einstein Trust Layer's data masking for sensitive data, such as personal information and payment details. Check how masking affects the size of the prompts your models accept
+* Never put credentials, keys, or other secrets in instructions or templates. Callouts use Named Credentials
+
+#### Validate before acting
+Check the model's output before anything is written or sent. See [Treat the output as untrusted](#treat-the-output-as-untrusted).
+
+#### Audit and review
+Turn on the Einstein Trust Layer's audit trail and feedback, and review them. They record what was sent to the model, what came back, and what users thought of it.
 
 [Back to Contents](#contents)
 
