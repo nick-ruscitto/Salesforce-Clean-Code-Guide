@@ -17,6 +17,21 @@
 ## Designing for Agents
 An agent reads an org the way a new developer does, without being able to ask what anything means. It chooses an action from the action's label and description, understands a field from its name and help text, and acts on what an output says it contains. Every rule in this guide's other sections applies, and the cost of breaking one is higher: a misleading name confuses a developer, but an agent acts on it.
 
+#### The same principles, a different reader
+Much of good agent design is good software design, read by a model instead of a developer. Several principles from this guide carry over directly:
+
+| Principle | In an agent |
+|---|---|
+| [Single Responsibility](./SOLID_GUIDE.md#single-responsibility) | A subagent, an action, or a prompt template has one job. One that needs "and" to describe it is two |
+| [Interface Segregation](./SOLID_GUIDE.md#interface-segregation) | A subagent has only the actions its job uses, and an action takes only the inputs it needs |
+| [Dependency Inversion](./SOLID_GUIDE.md#dependency-inversion) | Code calls the model through an interface, not a specific model or API |
+| [Meaningful names](./APEX_STYLE_GUIDE.md#naming) | The agent chooses actions and reads fields by their names and descriptions |
+| Don't repeat yourself | Each instruction is stated once |
+| Separation of concerns | The model writes and judges; code supplies the facts and decides what happens next |
+| [Error handling](./APEX_STYLE_GUIDE.md#exceptions) | The model's output is untrusted input, validated before anything acts on it |
+
+Some things have no parallel in ordinary code: a model's output varies from run to run, its instructions are read as natural language, and its context has a limit. The sections on [writing instructions](#writing-instructions) and [testing AI behavior](#testing-ai-behavior) cover those.
+
 #### Build code around the AI
 Most of a working Agentforce solution is ordinary code. The AI does a narrow job, writing or judging, and code decides what it is given, what order things happen in, and what happens with the result.
 
@@ -400,6 +415,8 @@ The failures worth finding are usually about what is missing: a record with no a
 
 ## Security
 An agent can only do what its actions do, and it can only see what its running user can see. Security for an agent is therefore mostly the security of its user and its actions, plus one new risk: the model reads text that someone else wrote.
+
+The [Apex security rules](./APEX_STYLE_GUIDE.md#security) apply to every action class: declared sharing, user mode, no hard-coded Ids, and bind variables instead of queries built from input. A value the model passes to an action is input like any other.
 
 #### Know which user the agent runs as
 * **Employee agents** run as the logged-in user, so they see and change only what that user can
