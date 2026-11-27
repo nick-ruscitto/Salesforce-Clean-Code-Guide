@@ -51,8 +51,8 @@ On a junction object, a field describes the relationship, not one of the two par
 #### Third normal form: fields depend on the record itself
 A field does not depend on another field of the same record.
 
-* On `Account`, a `RegionalManager__c` stored next to a `Region__c` picklist depends on the region, not on the account. The region is a thing of its own: make it an object, `Region__c`, with its manager on it, and look it up from Account
-* Read a value that lives on a related record through the relationship, such as `Region__r.Manager__c`. When the value is needed on the record, use a formula field. It always shows the current value
+* On `Account`, a `RegionalManager__c` lookup stored next to a `Region__c` picklist depends on the region, not on the account. The region is a thing of its own: make it an object, `Region__c`, with its manager as a lookup to User, and look it up from Account
+* Read a value that lives on a related record through the relationship, such as the manager's name, `Region__r.Manager__r.LastName`. When the value is needed on the record, use a formula field. It always shows the current value
 
 #### When to store a copy
 Storing a value that also lives elsewhere is correct when the platform requires it or the moment matters:
