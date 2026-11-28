@@ -126,7 +126,7 @@ variables:
 
 subagent case_help:
     label: "Case Help"
-    description: "Answers questions about one support case and closes it on request."
+    description: "Answers questions about one support case."
     reasoning:
         instructions: ->
             if @variables.case_id != "":
@@ -135,13 +135,21 @@ subagent case_help:
                     set @variables.case_summary = @outputs.summary
             | Answer the user's question from {!@variables.case_summary}.
             | If the summary does not answer it, say so.
+
+subagent case_closure:
+    label: "Case Closure"
+    description: "Closes one support case when the user asks to close it."
+    reasoning:
+        instructions: ->
+            | Close the case when the user asks you to, and tell them it is closed.
+            | If the case cannot be closed, say that the user's identity must be confirmed first.
         actions:
             close_case: @actions.close_case
                 with case_id = @variables.case_id
                 available when @variables.is_verified == True
 ```
 
-The summary always runs when a case is known, and the case can be closed only for a verified user. Neither depends on the model following an instruction.
+The summary always runs when a case is known, and the case can be closed only for a verified user. Neither depends on the model following an instruction. Answering questions and closing cases are separate subagents, so a request that only asks about a case is never routed to one that can close it. See [Treat what the model reads as untrusted](#treat-what-the-model-reads-as-untrusted).
 
 [Back to Contents](#contents)
 
